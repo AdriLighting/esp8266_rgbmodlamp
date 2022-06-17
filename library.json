@@ -50,19 +50,19 @@
     },
     {
         "owner": "Grellard Adrien",
-        "name": "esp_al_tools",
-        "version": "https://github.com/AdriLighting/espwificonnect_evo.git"
-    },
-    {
-        "owner": "Grellard Adrien",
         "name": "espwificonnect_evo",
         "version": "https://github.com/AdriLighting/espwificonnect_evo.git"
     },
     {
         "owner": "Grellard Adrien",
-        "name": "esp_littlefsHelpe",
+        "name": "esp_littlefsHelper",
         "version": "https://github.com/AdriLighting/esp_littlefsHelper.git"
-    },  
+    },
+    {
+        "owner": "Grellard Adrien",
+        "name": "arduino_patternsList",
+        "version": "https://github.com/AdriLighting/arduino_patternsList.git"
+    }
       
   ],
    
