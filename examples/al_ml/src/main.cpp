@@ -49,8 +49,8 @@ void setup() {
 
   WCEVO_managerPtrGet()->set_cm(WCEVO_CM_STAAP);
   WCEVO_managerPtrGet()->set_cmFail(WCEVO_CF_NEXTAP);
-  WCEVO_managerPtrGet()->credentials_add("free020FB5_EXT", "phcaadax");
-  WCEVO_managerPtrGet()->credentials_add("free3C3786_EXT", "phcaadax");
+  WCEVO_managerPtrGet()->credentials_add("SSID_1", "PSK_1");
+  WCEVO_managerPtrGet()->credentials_add("SSID_2", "PSK_2");
   #ifdef FILESYSTEM
     // WCEVO_managerPtrGet()->credentials_from_fs();  
   #endif
