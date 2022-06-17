@@ -36,7 +36,7 @@
     {
         "owner": "FastLED",
         "name": "FastLED",
-        "version": "https://github.com/FastLED/FastLED.git"
+        "version": "https://github.com/FastLED/FastLED.git@^3.5.0"
     },    
     {
         "owner": "Ivan Seidel",
