@@ -1,0 +1,72 @@
+{
+  "name": "esp8266_rgbmodlamp",
+  "version": "0.0.1",
+  "license": "MIT",
+  "description": "",
+  "keywords": "",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/AdriLighting/esp8266_rgbmodlamp.git"
+  },
+  "authors":
+  [
+    {
+      "name": "Grellard Adrien",
+      "email": "grellard.adrien@gmail.com",
+      "maintainer": true
+    }
+  ],
+  "dependencies": [
+    {
+        "owner": "Benoit Blanchon",
+        "name": "ArduinoJson",
+        "version": "https://github.com/bblanchon/ArduinoJson.git"
+    },
+    {
+        "owner": "jim lee",
+        "name": "LC_baseTools",
+        "version": "https://github.com/leftCoast/LC_baseTools.git"
+    },
+    {
+        "owner": "David Conran",
+        "name": "IRremoteESP8266",
+        "version": "https://github.com/crankyoldgit/IRremoteESP8266.git"
+    },
+    {
+        "owner": "FastLED",
+        "name": "FastLED",
+        "version": "https://github.com/FastLED/FastLED.git"
+    },    
+    {
+        "owner": "Ivan Seidel",
+        "name": "LinkedList",
+        "version": "https://github.com/AdriLighting/LinkedList.git"
+    },
+    {
+        "owner": "Grellard Adrien",
+        "name": "esp_al_tools",
+        "version": "https://github.com/AdriLighting/esp_al_tools.git"
+    },
+    {
+        "owner": "Grellard Adrien",
+        "name": "esp_al_tools",
+        "version": "https://github.com/AdriLighting/espwificonnect_evo.git"
+    },
+    {
+        "owner": "Grellard Adrien",
+        "name": "espwificonnect_evo",
+        "version": "https://github.com/AdriLighting/espwificonnect_evo.git"
+    },
+    {
+        "owner": "Grellard Adrien",
+        "name": "esp_littlefsHelpe",
+        "version": "https://github.com/AdriLighting/esp_littlefsHelper.git"
+    },  
+      
+  ],
+   
+  "frameworks": "arduino",
+  "platforms": "espressif8266",
+  "headers": "almllib.h"
+}
