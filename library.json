@@ -37,7 +37,17 @@
         "owner": "FastLED",
         "name": "FastLED",
         "version": "https://github.com/FastLED/FastLED.git@^3.5.0"
-    },    
+    },   
+    {
+        "owner": "Me No Dev ",
+        "name": "ESPAsyncTCP",
+        "version": "https://github.com/me-no-dev/ESPAsyncTCP.git"
+    }, 
+    {
+        "owner": "Me No Dev ",
+        "name": "ESPAsyncWebServer",
+        "version": "https://github.com/me-no-dev/ESPAsyncWebServer.git"
+    },           
     {
         "owner": "Ivan Seidel",
         "name": "LinkedList",
