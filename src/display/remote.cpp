@@ -8,18 +8,19 @@ RemoteControl * RemoteControlPtrGet(){return RemoteControlPtr;}
 RemoteControl::RemoteControl(){
 		RemoteControlPtr = this;
     #ifdef ADS_PIN_IR
-    RemoteControl_ir::begin();  
+      _Ir_intern = new RemoteControl_ir(ADS_PIN_IR, RemoteControlIrMod_t::RIRMOD_INTERN);
+      _Ir_intern->begin();
     #endif
 }
 
-#ifdef ADS_PIN_IR
-void RemoteControl::handle_ir() {
-  if (RemoteControl_ir::handle()) {
-    ALT_TRACEC(ALML_DEBUGREGION_REMOTE, "send_appi\n");
-    RemoteControl_udp::send_appi(true, true, true);
-  }
-}  
-#endif
+// #ifdef ADS_PIN_IR
+  void RemoteControl::handle_ir() {
+    if (_Ir_intern && _Ir_intern->handle()) {
+      ALT_TRACEC(ALML_DEBUGREGION_REMOTE, "send_appi\n");
+      RemoteControl_udp::send_appi(true, true, true);
+    }
+  }  
+// #endif
 
 void RemoteControl::handle_udp() 	{RemoteControl_udp::handle();}
 
@@ -30,6 +31,9 @@ void RemoteControl_udp::begin(){
     UdpMulti::begin();
     Udp::stop();   	
     Udp::begin();     
+}
+void RemoteControl_udp::send_toIp(const String & transmit_buffer, IPAddress ip, uint16_t port){ 
+  Udp::send_toIp(transmit_buffer, ip, port); 
 }
 void RemoteControl_udp::send_appi(boolean eff, boolean prog, boolean reset, uint8_t effLoad){ 
     String out = "";

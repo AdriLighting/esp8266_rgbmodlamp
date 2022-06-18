@@ -47,7 +47,33 @@
         "owner": "Me No Dev ",
         "name": "ESPAsyncWebServer",
         "version": "https://github.com/me-no-dev/ESPAsyncWebServer.git"
-    },           
+    },  
+    {
+        "owner": "adafruit",
+        "name": "Adafruit-GFX-Library",
+        "version": "https://github.com/adafruit/Adafruit-GFX-Library.git"
+    }, 
+    {
+        "owner": "adafruit",
+        "name": " Adafruit_ILI9341",
+        "version": "https://github.com/AdriLighting/Adafruit_ILI9341.git"
+    }, 
+    {
+        "owner": "oliver",
+        "name": "U8g2_for_Adafruit_GFX",
+        "version": "https://github.com/olikraus/U8g2_for_Adafruit_GFX.git"
+    }, 
+    {
+        "owner": "Spiros Papadimitriou",
+        "name": "XPT2046",
+        "version": "https://github.com/spapadim/XPT2046.git"
+    }, 
+    {
+        "owner": "Bodmer",
+        "name": " JPEGDecoder",
+        "version": "https://github.com/Bodmer/JPEGDecoder.git"
+    }, 
+    
     {
         "owner": "Ivan Seidel",
         "name": "LinkedList",

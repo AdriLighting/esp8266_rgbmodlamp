@@ -226,29 +226,29 @@ Device::Device(const char * name, uint8_t oc){
 
   ALT_TRACEC("main", "[Device][name: %s][oc: %d]\n", _name, _output_count);
 
-  // get_outputArray(0)->_leds_segment.segment_new(0, 14,  false);
-  // get_outputArray(0)->_leds_segment.segment_new(15, 29, true);
+  get_outputArray(0)->_leds_segment.segment_new(0, 14,  false);
+  get_outputArray(0)->_leds_segment.segment_new(15, 29, true);
 
-  get_outputArray(0)->_leds_segment.segment_new(0, 63,  false);
-  get_outputArray(0)->_leds_segment.segment_new(64, 127, true);
-  int     arm_left      = (128/2);
-  int     arm_right     = (128/2);
-  int     mod_left      = arm_left % 4;
-  int     mod_right     = arm_right % 4;
-  uint8_t arm_div_left  = arm_left / 4;
-  uint8_t arm_div_right = arm_right / 4;
-  get_outputArray(0)->_armoire.segemnt_new(0,                             arm_div_left-1,                               false,  aramoire_side_left  );
-  get_outputArray(0)->_armoire.segemnt_new(arm_left  + (arm_div_right*3), arm_left + (((arm_div_right*4)-1)+mod_right), true,   aramoire_side_right );
-  get_outputArray(0)->_armoire.segemnt_new(arm_div_left,                  (arm_div_left*2)-1,                           false,  aramoire_side_left  );
-  get_outputArray(0)->_armoire.segemnt_new(arm_left + (arm_div_right*2),   arm_left + ((arm_div_right*3)-1),            true,   aramoire_side_right );
-  get_outputArray(0)->_armoire.segemnt_new(arm_div_left*2,                (arm_div_left*3)-1,                           false,  aramoire_side_left  );
-  get_outputArray(0)->_armoire.segemnt_new(arm_left + arm_div_right,      arm_left + ((arm_div_right*2)-1),             true,   aramoire_side_right );
-  get_outputArray(0)->_armoire.segemnt_new(arm_div_left*3,                ((arm_div_left*4)-1)+mod_left,                false,  aramoire_side_left  );
-  get_outputArray(0)->_armoire.segemnt_new(arm_left,                      arm_left + (arm_div_right-1),                 true,   aramoire_side_right );  
-  Serial.printf_P(PSTR("[mod_left][%d]"), mod_left);
-  Serial.printf_P(PSTR("[mod_right][%d]"), mod_right);
-  Serial.printf_P(PSTR("[arm_div_left][%d]"), arm_div_left);
-  Serial.printf_P(PSTR("[arm_div_right][%d]\n"), arm_div_right);
+  // get_outputArray(0)->_leds_segment.segment_new(0, 63,  false);
+  // get_outputArray(0)->_leds_segment.segment_new(64, 127, true);
+  // int     arm_left      = (128/2);
+  // int     arm_right     = (128/2);
+  // int     mod_left      = arm_left % 4;
+  // int     mod_right     = arm_right % 4;
+  // uint8_t arm_div_left  = arm_left / 4;
+  // uint8_t arm_div_right = arm_right / 4;
+  // get_outputArray(0)->_armoire.segemnt_new(0,                             arm_div_left-1,                               false,  aramoire_side_left  );
+  // get_outputArray(0)->_armoire.segemnt_new(arm_left  + (arm_div_right*3), arm_left + (((arm_div_right*4)-1)+mod_right), true,   aramoire_side_right );
+  // get_outputArray(0)->_armoire.segemnt_new(arm_div_left,                  (arm_div_left*2)-1,                           false,  aramoire_side_left  );
+  // get_outputArray(0)->_armoire.segemnt_new(arm_left + (arm_div_right*2),   arm_left + ((arm_div_right*3)-1),            true,   aramoire_side_right );
+  // get_outputArray(0)->_armoire.segemnt_new(arm_div_left*2,                (arm_div_left*3)-1,                           false,  aramoire_side_left  );
+  // get_outputArray(0)->_armoire.segemnt_new(arm_left + arm_div_right,      arm_left + ((arm_div_right*2)-1),             true,   aramoire_side_right );
+  // get_outputArray(0)->_armoire.segemnt_new(arm_div_left*3,                ((arm_div_left*4)-1)+mod_left,                false,  aramoire_side_left  );
+  // get_outputArray(0)->_armoire.segemnt_new(arm_left,                      arm_left + (arm_div_right-1),                 true,   aramoire_side_right );  
+  // Serial.printf_P(PSTR("[mod_left][%d]"), mod_left);
+  // Serial.printf_P(PSTR("[mod_right][%d]"), mod_right);
+  // Serial.printf_P(PSTR("[arm_div_left][%d]"), arm_div_left);
+  // Serial.printf_P(PSTR("[arm_div_right][%d]\n"), arm_div_right);
 
 
 

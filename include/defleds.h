@@ -192,6 +192,8 @@
 #define ACTION_INTENSITY_UP     5
 #define ACTION_INTENSITY_DOWN   6
 #define ACTION_POWER            7
+#define ACTION_HUE_UP         8
+#define ACTION_HUE_DOWN       9
 
   #define COLOR_WHITE         0xFFFFFF
   #define COLOR_BLACK         0x000000
