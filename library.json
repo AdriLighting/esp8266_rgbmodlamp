@@ -49,12 +49,17 @@
         "version": "https://github.com/me-no-dev/ESPAsyncWebServer.git"
     },  
     {
-        "owner": "adafruit",
-        "name": "Adafruit-GFX-Library",
+        "owner": "Adafruit",
+        "name": "Adafruit GFX Library",
         "version": "https://github.com/adafruit/Adafruit-GFX-Library.git"
     }, 
     {
-        "owner": "adafruit",
+        "owner": "Adafruit",
+        "name": "Adafruit BusIO",
+        "version": "https://github.com/adafruit/Adafruit_BusIO.git"
+    },     
+    {
+        "owner": "Adafruit",
         "name": " Adafruit_ILI9341",
         "version": "https://github.com/AdriLighting/Adafruit_ILI9341.git"
     }, 
