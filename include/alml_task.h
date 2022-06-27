@@ -3,7 +3,10 @@
 
 #include <Arduino.h>
 #include <functional>
+#include "libextern.h"
 
+typedef std::function<void()> TaskSetFunction_t;
+typedef std::function<void(uint8_t tp, uint32_t d, TaskSetFunction_t f)> TaskSetFunctionList_t;
 
 
 // #ifndef _TASK_MICRO_RES
@@ -78,12 +81,14 @@ class TaskSimple
   ETO _osMode = ETO_S;
 
   uint8_t _ID = 0;
+  String  _name = "";
 
   uint8_t   _iteration_cnt      = 0;
   int       _iteration_max      = 0;
   boolean   _iteration_next_greater = true;
 
   boolean   _enabled  = false;
+  boolean   _debug    = true;
 
   TaskCallback _callbackOstart  = nullptr;
   TaskCallback _callbackOend    = nullptr;
@@ -106,6 +111,9 @@ public:
   boolean isEnabled();
 
   void set_enabled(boolean);
+  void set_debug(boolean);
+
+  void set_name(const String &);
 
   void setup(boolean v1 = false);
 
@@ -124,9 +132,10 @@ public:
   void set_taskDelayEnabled(ETD mod, boolean v1 = true);
 
   uint8_t get_id(){return _ID;}
+  String get_name() const {return _name;}
 };
 
-
+/*
 class al_taskScheduler {
 public:
   TaskSimple * _TaskArray = nullptr;
@@ -140,6 +149,74 @@ public:
 
   TaskSimple* get_task(uint8_t);
 };
+*/
+
+typedef enum : uint8_t {
+  TASKNAME_OUTPUT =0, 
+  TASKNAME_IR,   
+  TASKNAME_UDP,   
+  TASKNAME_LAMP,   
+  TASKNAME_WIFI,   
+  TASKNAME_WEBSERVER,   
+  TASKNAME_SERIAL,
+  TASKNAME_PROGRAM,
+  TASKNAME_NONE 
+} TASKNAME_t;          
+typedef enum : uint8_t {
+  TASKLEVEL_ALLWAYS =0, 
+  TASKLEVEL_SET,   
+  TASKLEVEL_NONE 
+} TASKLEVEL_t;  
+
+class alml_taskItem
+{
+    typedef std::function<void()> TaskCallback_t;
+    TASKNAME_t _name = TASKNAME_NONE;
+    TASKLEVEL_t _lvl = TASKLEVEL_NONE;  
+public:
+    TaskSetFunctionList_t _cbSetup = nullptr;
+    TaskCallback_t _cb = nullptr;
+    uint32_t _duration = 0;    
+
+
+  alml_taskItem(TaskCallback_t cb, uint32_t duration);
+  alml_taskItem(TaskCallback_t cb, uint32_t duration, TASKNAME_t name, TASKLEVEL_t lvl);
+  alml_taskItem(TaskCallback_t cb, uint32_t duration, TASKNAME_t name, TASKLEVEL_t lvl, TaskSetFunctionList_t s);
+  ~alml_taskItem(){};
+  TASKNAME_t get_name() {return _name;}
+  void setup(uint8_t p);
+  
+};
+
+
+
+class alml_taskSheduler
+{
+  LList<TaskSimple *>     _list;
+  LList<alml_taskItem *>  _listItem;
+public:
+  alml_taskSheduler(){};
+  ~alml_taskSheduler(){};
+  TaskSimple* get_task(uint8_t);
+  LList<TaskSimple*>& get_list() { return _list; }
+  LList<alml_taskItem*>& get_listItem() { return _listItem; }
+  void loop();
+  TaskSimple* get_taskByName(TASKNAME_t);
+  void set_enabled_byTaskName(TASKNAME_t, boolean v);
+  void set_debug_byTaskName(TASKNAME_t, boolean v);
+  void set_name_byTaskName(TASKNAME_t, const String & v);
+
+  // void set_new();
+};
+
+
+  // _taskList.add(new alml_taskItem(taskCb_ir,        50000));
+  // _taskList.add(new alml_taskItem(taskCb_udp,       100000));
+  // _taskList.add(new alml_taskItem(taskCb_lamp,      5000));
+  // _taskList.add(new alml_taskItem(taskCb_program,   100000));
+  // _taskList.add(new alml_taskItem(taskCb_wifi,      100000));
+  // _taskList.add(new alml_taskItem(taskCb_webserver, 100000));
+  // _taskList.add(new alml_taskItem(taskCb_serial,    100000));
 
 #endif
 

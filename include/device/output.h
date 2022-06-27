@@ -1,8 +1,8 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
 
-	#include "../fastled/base.h"	
-	#include "../pixel/set.h"	
+  #include "../fastled/base.h"  
+  #include "../pixel/set.h" 
 
 static const char FNPATH_COLORPICKER    [] PROGMEM = "/outputs/colopicker.json";
 
@@ -99,8 +99,8 @@ static const char FNPATH_COLORPICKER    [] PROGMEM = "/outputs/colopicker.json";
     aramoire_segemnts * _segements_left[4];
     aramoire_segemnts * _segements_right[4];
 
-    uint16_t  * _left = nullptr;
-    uint16_t  * _right = nullptr;
+    // uint16_t  * _left = nullptr;
+    // uint16_t  * _right = nullptr;
 
     void segemnt_new(uint32_t start, uint32_t end, boolean dir, const aramoire_side &side);
 
@@ -109,7 +109,7 @@ static const char FNPATH_COLORPICKER    [] PROGMEM = "/outputs/colopicker.json";
 
     void get_segmentCnt(uint8_t &  max);
 
-    void segemnt_leftRight(int nbr);
+    // void segemnt_leftRight(int nbr);
 
     // aramoire_segemnts * get_segment(int pos);
     aramoire_segemnts * get_sideSegment(aramoire_side dir, int pos);
@@ -307,32 +307,32 @@ static const char FNPATH_COLORPICKER    [] PROGMEM = "/outputs/colopicker.json";
 
 
 
-      void set_eff_autoplay   (const String & cmd, const JsonObject & v);
-      void set_eff_bri        (const String & cmd, const JsonObject & v);
-      void set_eff_scale      (const String & cmd, const JsonObject & v);
-      void set_eff_speed      (const String & cmd, const JsonObject & v);
-      void set_eff_speedIncr  (const String & cmd, const JsonObject & v);
-      void set_eff_prev       (const String & cmd, const JsonObject & v);
-      void set_eff_activ      (const String & cmd, const JsonObject & v);
-      // void set_eff_f          (const String & cmd, const JsonObject & v);
-      void set_eff_id         (const String & cmd, const JsonObject & v);
-      void set_select         (const String & cmd, const JsonObject & v);
-      void set_onoff          (const String & cmd, const JsonObject & v);
-      void set_toggle         (const String & cmd, const JsonObject & v);
-      void set_bri            (const String & cmd, const JsonObject & v);
-      void set_briIncr        (const String & cmd, const JsonObject & v);
-      void set_tw             (const String & cmd, const JsonObject & v);
-      void set_tw_v           (const String & cmd, const JsonObject & v);
-      void set_tw_f           (const String & cmd, const JsonObject & v);
-      void set_hsv_h          (const String & cmd, const JsonObject & v);
-      void set_hsv_hIncr      (const String & cmd, const JsonObject & v);
-      void set_hsv_s          (const String & cmd, const JsonObject & v);
-      void set_hsv_v          (const String & cmd, const JsonObject & v);
-      void set_rgb            (const String & cmd, const JsonObject & v);   
-      void set_rgb_f          (const String & cmd, const JsonObject & v);   
-      void set_eff_rgb1       (const String & cmd, const JsonObject & v);   
-      void set_eff_colorMod   (const String & cmd, const JsonObject & v);  
-      void set_etage          (const String & cmd, const JsonObject & v);  
+      boolean set_eff_autoplay   (const String & cmd, const JsonObject & v);
+      boolean set_eff_bri        (const String & cmd, const JsonObject & v);
+      boolean set_eff_scale      (const String & cmd, const JsonObject & v);
+      boolean set_eff_speed      (const String & cmd, const JsonObject & v);
+      boolean set_eff_speedIncr  (const String & cmd, const JsonObject & v);
+      boolean set_eff_prev       (const String & cmd, const JsonObject & v);
+      boolean set_eff_activ      (const String & cmd, const JsonObject & v);
+      // boolean set_eff_f          (const String & cmd, const JsonObject & v);
+      boolean set_eff_id         (const String & cmd, const JsonObject & v);
+      boolean set_select         (const String & cmd, const JsonObject & v);
+      boolean set_onoff          (const String & cmd, const JsonObject & v);
+      boolean set_toggle         (const String & cmd, const JsonObject & v);
+      boolean set_bri            (const String & cmd, const JsonObject & v);
+      boolean set_briIncr        (const String & cmd, const JsonObject & v);
+      boolean set_tw             (const String & cmd, const JsonObject & v);
+      boolean set_tw_v           (const String & cmd, const JsonObject & v);
+      boolean set_tw_f           (const String & cmd, const JsonObject & v);
+      boolean set_hsv_h          (const String & cmd, const JsonObject & v);
+      boolean set_hsv_hIncr      (const String & cmd, const JsonObject & v);
+      boolean set_hsv_s          (const String & cmd, const JsonObject & v);
+      boolean set_hsv_v          (const String & cmd, const JsonObject & v);
+      boolean set_rgb            (const String & cmd, const JsonObject & v);   
+      boolean set_rgb_f          (const String & cmd, const JsonObject & v);   
+      boolean set_eff_rgb1       (const String & cmd, const JsonObject & v);   
+      boolean set_eff_colorMod   (const String & cmd, const JsonObject & v);  
+      boolean set_etage          (const String & cmd, const JsonObject & v);  
 
 
       void set_pos(uint8_t);

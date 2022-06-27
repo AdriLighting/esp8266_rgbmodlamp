@@ -1,18 +1,68 @@
 #ifndef DEVICE_H
   #define DEVICE_H
 
-	#include "../fastled/base.h"	
-	#include "output.h"	
+  #include "../fastled/base.h"  
+  #include "output.h" 
   #include "../alml_task.h" 
 
+  extern StaticJsonDocument<1024> DeviceUserConfig;
 
 
-  struct taskCbList {
-    void (* _task) ();
-    int _duration;
-  } ;
+
+class DeviceSave_item
+{
+  boolean _succes = false;
+  uint8_t _pin = 0;
+  char    * _request = nullptr;
+public:
 
 
+  DeviceSave_item(boolean, uint8_t, const char *);
+  ~DeviceSave_item();
+
+  DeviceSave_item &operator = (const char * const & other);
+  DeviceSave_item &operator = (uint8_t const & other);
+
+  void    get_request(const char * & ret);
+  uint8_t get_pin();
+  boolean get_succes();
+};
+
+
+/*
+  req - succes - result
+  op
+
+  -
+  reset
+  statu
+  sav
+
+*/
+  class DeviceSave {
+    LList<DeviceSave_item *> _currentList;
+    LList<DeviceSave_item *> _lastList;
+  public:
+    DeviceSave();
+    ~DeviceSave();
+
+    DeviceSave_item * get_item(boolean, uint8_t);
+    LList<DeviceSave_item*>& get_list(boolean);
+    void sav();
+    void new_req(boolean s, uint8_t p, const char * r);
+    const String get_lastRequest() ;
+  };
+
+  #ifdef ALML_TFT
+    struct EffectValue
+    {
+      int32_t _value = 0;
+      uint8_t _state = 0;
+    };  
+    extern EffectValue _eff_bri ;
+    extern EffectValue _eff_speed ;
+    extern EffectValue _eff_scale ;
+  #endif
 /* 
   classe device
 
@@ -63,7 +113,9 @@
    */
   class Device 
   {
-      al_taskScheduler * _TaskScheduler;
+      void testTft(int8_t sP);
+
+      // al_taskScheduler * _TaskScheduler;
 
       Program * _Program = nullptr;
 
@@ -90,31 +142,31 @@
       boolean isEffectLoadRequest(const String & cmd);
 
 
-      void parseJson_output(uint8_t p , String & nextEffect, const String & req, JsonObject val);
+      boolean parseJson_output(uint8_t p , String & nextEffect, const String & req, JsonObject val);
+
+      unsigned long _timerOutPutsSav  = 0;
+
+      alml_taskSheduler * get_taskSheduler();
+
     public:
-
-      al_taskScheduler * get_taskSheduler();
-      TaskSimple * get_task(uint8_t);
-
-      JsonArray OutputSavArray;
-      boolean _outputsSav = true;
-      unsigned long _timerOutPutsSav = 0;
-
-      
       Device(const char * name, uint8_t oc);
 
-      void get_outputCount(uint8_t & ret);
-      Output * get_outputArray(uint8_t p);
+      String get_lastRequest() const;
+
+      TaskSimple * get_task(uint8_t);
+      
+
+      void    get_outputCount(uint8_t & ret);
+      Output  * get_outputArray(uint8_t p);
+
       const char * get_name();
       
       void loop();
-
 
       void parseJson_outpitListByDn(DynamicJsonDocument & doc);
       void parseJson_output(DynamicJsonDocument & doc);
       void parseJson_device(DynamicJsonDocument & doc);
       
-
       void output_toJson(uint8_t pos, JsonObject & oject, boolean shortKey = false, boolean fs = true, boolean eff = false);
       void outputs_toJson(JsonObject & oject, boolean shortKey = true, boolean fs = true, boolean eff = false);
       void outputs_effect_toJson(JsonObject & oject);

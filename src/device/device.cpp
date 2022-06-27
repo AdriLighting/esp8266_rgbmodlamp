@@ -6,50 +6,233 @@
 #include "../../include/pixel/effectcore.h"
 #include "../../include/display/lamp.h"
 #include "../../include/alml_webserver.h"
+#include "../../include/tft/tft.h"
+#include "../../include/tft/tfttxt.h"
+
+#include <wificonnectevo.h>
 
 extern AsyncWebServer web_server;
 
+alml_taskSheduler _alml_taskSheduler;
 
-void taskCb_wifi(){
-  WCEVO_managerPtrGet()->handleConnection();
-}  
-void taskCb_program(){
- if (!RemoteControlPtrGet() && !LAMPPTRGET()->isLampOn()) return;
- RemoteControlPtrGet()->get_program()->handle(); 
-}
-#ifdef ADS_PIN_IR
-  void taskCb_ir(){
-    if (!RemoteControlPtrGet())  return;
-    RemoteControlPtrGet()->handle_ir();  
-  }  
+
+// String& DeviceSave_item::operator=(const String& source)
+// {
+//     if (_request) delete _request;
+//     int len = source.length();
+//     _request = new char[len+1];
+//     strcpy(_request, source.c_str());
+
+//     String s = String(_request);
+//     return s;
+// }
+
+
+  DeviceSave_item::DeviceSave_item(boolean s, uint8_t p, const char * r){
+    _succes   = s;
+    _pin      = p;
+    * this    = r;
+
+  };
+  DeviceSave_item::~DeviceSave_item(){
+    if (_request) delete _request;
+  };
+
+  DeviceSave_item &DeviceSave_item::operator = (const char * const & other) {
+    if (_request) delete _request;
+    _request = new char[strlen(other)+1];
+    strcpy(_request, other);
+    return *this;
+  } 
+  DeviceSave_item &DeviceSave_item::operator = (uint8_t const & other) {
+    _pin = other;
+    return *this;
+  } 
+  void DeviceSave_item::get_request(const char * & ret) {
+    ret = _request;
+  } 
+  uint8_t DeviceSave_item::get_pin(){
+    return _pin;
+  } 
+  boolean DeviceSave_item::get_succes(){
+    return _succes;
+  } 
+
+  DeviceSave::DeviceSave(){};
+  DeviceSave::~DeviceSave(){
+    while (_currentList.size()) {
+      DeviceSave_item *ptr = _currentList.shift();
+      delete ptr;
+    }
+    _currentList.clear(); 
+    while (_lastList.size()) {
+      DeviceSave_item *ptr = _lastList.shift();
+      delete ptr;
+    }
+    _lastList.clear();      
+  };
+  DeviceSave_item * DeviceSave::get_item(boolean dir, uint8_t p) {return get_list(dir)[p];}
+  LList<DeviceSave_item*>& DeviceSave::get_list(boolean dir) {
+    if (dir)
+      return _currentList;
+    else
+      return _lastList;
+  }
+
+  void DeviceSave::new_req(boolean s, uint8_t p, const char * r){
+
+    ALT_TRACEC("main", "statu: %d - pin: %d - request: %s -> ", s, p, r);   
+
+    size_t size = _currentList.size();
+
+    boolean add = true;
+
+    // if (size == 0) add = false;
+
+    for(size_t i = 0; i < size; ++i) {
+      DeviceSave_item * item  =  _currentList.get(i);
+      boolean         succes  = item->get_succes();
+      uint8_t         pin     = item->get_pin();
+      const char      * name  = "";  
+      item->get_request(name);
+
+      if (pin == p && succes == s && (strcmp(name, r) == 0)) add = false;
+    }
+
+    if (add) _currentList.add(new DeviceSave_item(s, p, r));
+
+    #ifdef ALT_DEBUG_TARCE
+      if (ALT_debugPrint("main")) Serial.printf_P(PSTR("%d\n"), add);  
+    #endif
+
+  }
+
+  const String DeviceSave::get_lastRequest() {
+
+    size_t size = _lastList.size();
+
+    if (size == 0) return String("");
+
+    DeviceSave_item * ptr = _lastList.get(size-1);
+
+    const char * name = "";
+
+    ptr->get_request(name);
+
+    return String(name);
+  }
+
+
+  void DeviceSave::sav(){
+
+    while (_lastList.size()) {
+      DeviceSave_item *ptr = _lastList.shift();
+      delete ptr;
+    }
+    _lastList.clear();
+
+
+    size_t size = _currentList.size();
+    for(size_t i = 0; i < size; ++i) {
+      DeviceSave_item * item  =  _currentList.get(i);
+      boolean         succes  = item->get_succes();
+      uint8_t         pin     = item->get_pin();
+      const char      * name  = "";
+      item->get_request(name);
+
+      _lastList.add(new DeviceSave_item(succes, pin, name));
+     
+      ALT_TRACEC("main", "&c:1&s:\tstatu: %d - pin: %d - request: %s -> ", succes, pin, name);   
+
+      if (!succes) {
+        #ifdef ALT_DEBUG_TARCE
+          if (ALT_debugPrint("main")) Serial.println(F("Not SAV"));  
+        #endif        
+        continue;
+      }
+
+      #ifdef ALT_DEBUG_TARCE
+        if (ALT_debugPrint("main")) Serial.println(F("SAV"));  
+      #endif  
+
+      DevicePtrGet()->output_toSpiff(pin, "/outputs/lamp.txt");
+      DevicePtrGet()->armoiretofs(pin);
+
+      delay(0);       
+    }
+
+    while (_currentList.size()) {
+      DeviceSave_item *ptr = _currentList.shift();
+      delete ptr;
+    }
+    _currentList.clear();    
+  }
+
+DeviceSave _DeviceSave;
+
+
+
+
+#ifdef ALML_TFT
+  Tft_txt * tft_output_1 = nullptr;
+  Tft_txt * tft_output_2 = nullptr;
+  Tft_txt * tft_output_3 = nullptr;
+  Tft_txt * tft_output_4 = nullptr;
+  EffectValue _eff_bri ;
+  EffectValue _eff_speed ;
+  EffectValue _eff_scale ;
 #endif
-void taskCb_serial(){
-  #ifdef DEBUG_KEYBOARD
-  _Sr_menu.serialRead();  
-  #endif
-}
-void taskCb_lamp(){
-  LAMPPTRGET()->loop();  
-}
-void taskCb_webserver(){
-  _Webserver.handle();
-}
-void taskCb_udp(){
-  if (!RemoteControlPtrGet()) return;
-  RemoteControlPtrGet()->handle_udp();  
-}
-PROGMEM taskCbList _taskCbList [] = { 
+
+namespace {
+  String  _string_to_split(String name, String value, String sep){
+      return name + sep + value;
+  }
+  String  _string_to_split(String name, String value){
+      return name + ";" + value + "\n";
+  }   
+
+
+  void taskCb_wifi(){
+    WCEVO_managerPtrGet()->handleConnection();
+  }  
+  void taskCb_program(){
+   if (!RemoteControlPtrGet() && !LAMPPTRGET()->isLampOn()) return;
+   RemoteControlPtrGet()->get_program()->handle(); 
+  }
   #ifdef ADS_PIN_IR
-  {&taskCb_ir         , 50000},  
+    void taskCb_ir(){
+      if (!RemoteControlPtrGet())  return;
+      RemoteControlPtrGet()->handle_ir();  
+    }  
   #endif
-  {&taskCb_udp        , 100000},
-  {&taskCb_lamp       , 5000},
-  {&taskCb_program    , 100000},
-  {&taskCb_wifi       , 50000},
-  {&taskCb_webserver  , 100000},
-  {&taskCb_serial     , 100000}
-};
-uint8_t _taskCbListCnt = ARRAY_SIZE(_taskCbList);
+  #ifdef DEBUG_KEYBOARD  
+    void taskCb_serial(){
+      _Sr_menu.serialRead();  
+    }
+  #endif
+  void taskCb_lamp(){
+    LAMPPTRGET()->loop();  
+  }
+  void taskCb_webserver(){
+    _Webserver.handle();
+  }
+  void taskCb_udp(){
+    if (!RemoteControlPtrGet()) return;
+    RemoteControlPtrGet()->handle_udp();  
+  }
+
+  void taskSetup(uint8_t tp, uint32_t d, TaskSetFunction_t f){
+      _alml_taskSheduler.get_task(tp)->set_callback(f); 
+      _alml_taskSheduler.get_task(tp)->set_taskDelay(ETD::ETD_TIMER, true, d);
+      _alml_taskSheduler.get_task(tp)->set_iteration_max(-1);
+      _alml_taskSheduler.get_task(tp)->setup(true);
+      _alml_taskSheduler.get_task(tp)->set_enabled(true);   
+  }
+
+
+}
+
+
 
 /*
   instance de la clase leds
@@ -98,6 +281,8 @@ uint8_t _taskCbListCnt = ARRAY_SIZE(_taskCbList);
 TaskSimple * _task_reset = nullptr;
 
 
+StaticJsonDocument<1024> DeviceUserConfig;
+
 /* 
   doc json statique pour la generalisation des sauvegardes dans la memoir spiff 
   permettre de filtrer les changement effectuer pour chaque stip
@@ -113,7 +298,7 @@ TaskSimple * _task_reset = nullptr;
   ... a mod
 */
 /** \brief doc json statique pour la generalisation des sauvegardes dans la memoir spiff  */  
-StaticJsonDocument<200> OutputSav;
+// StaticJsonDocument<200> OutputSav;
 
 /* 
   ptr ver l'array des instance EffectWorker
@@ -226,30 +411,53 @@ Device::Device(const char * name, uint8_t oc){
 
   ALT_TRACEC("main", "[Device][name: %s][oc: %d]\n", _name, _output_count);
 
-  get_outputArray(0)->_leds_segment.segment_new(0, 14,  false);
-  get_outputArray(0)->_leds_segment.segment_new(15, 29, true);
+
+  if (DeviceUserConfig.containsKey(F("segment"))) {
+
+    uint8_t segment_op = DeviceUserConfig[F("segment")][F("op")].as<uint8_t>();
+
+    Serial.printf_P(PSTR("segment initialize on pin: %d\n"), segment_op);
+
+    JsonArray segmentArray = DeviceUserConfig[F("segment")][F("items")].as<JsonArray>();
+    for (JsonObject item : segmentArray) {
+      uint8_t s = item[F("s")].as<uint8_t>();
+      uint8_t e = item[F("e")].as<uint8_t>();
+      bool    d = item[F("d")].as<bool>(); 
+      Serial.printf_P(PSTR("\ts: %d e: %d d: %d\n"), s, e, d);
+      get_outputArray(segment_op)->_leds_segment.segment_new(s, e, d);
+    }
+  }
+
+
 
   // get_outputArray(0)->_leds_segment.segment_new(0, 63,  false);
   // get_outputArray(0)->_leds_segment.segment_new(64, 127, true);
-  // int     arm_left      = (128/2);
-  // int     arm_right     = (128/2);
-  // int     mod_left      = arm_left % 4;
-  // int     mod_right     = arm_right % 4;
-  // uint8_t arm_div_left  = arm_left / 4;
-  // uint8_t arm_div_right = arm_right / 4;
-  // get_outputArray(0)->_armoire.segemnt_new(0,                             arm_div_left-1,                               false,  aramoire_side_left  );
-  // get_outputArray(0)->_armoire.segemnt_new(arm_left  + (arm_div_right*3), arm_left + (((arm_div_right*4)-1)+mod_right), true,   aramoire_side_right );
-  // get_outputArray(0)->_armoire.segemnt_new(arm_div_left,                  (arm_div_left*2)-1,                           false,  aramoire_side_left  );
-  // get_outputArray(0)->_armoire.segemnt_new(arm_left + (arm_div_right*2),   arm_left + ((arm_div_right*3)-1),            true,   aramoire_side_right );
-  // get_outputArray(0)->_armoire.segemnt_new(arm_div_left*2,                (arm_div_left*3)-1,                           false,  aramoire_side_left  );
-  // get_outputArray(0)->_armoire.segemnt_new(arm_left + arm_div_right,      arm_left + ((arm_div_right*2)-1),             true,   aramoire_side_right );
-  // get_outputArray(0)->_armoire.segemnt_new(arm_div_left*3,                ((arm_div_left*4)-1)+mod_left,                false,  aramoire_side_left  );
-  // get_outputArray(0)->_armoire.segemnt_new(arm_left,                      arm_left + (arm_div_right-1),                 true,   aramoire_side_right );  
-  // Serial.printf_P(PSTR("[mod_left][%d]"), mod_left);
-  // Serial.printf_P(PSTR("[mod_right][%d]"), mod_right);
-  // Serial.printf_P(PSTR("[arm_div_left][%d]"), arm_div_left);
-  // Serial.printf_P(PSTR("[arm_div_right][%d]\n"), arm_div_right);
 
+  if (DeviceUserConfig.containsKey(F("segment_armoire"))) {
+
+    uint8_t segment_op = DeviceUserConfig[F("segment_armoire")][F("op")].as<uint8_t>();
+
+    Serial.printf_P(PSTR("segment_armoire initialize on pin: %d\n"), segment_op);
+
+    int     arm_left      = (128/2);
+    int     arm_right     = (128/2);
+    int     mod_left      = arm_left % 4;
+    int     mod_right     = arm_right % 4;
+    uint8_t arm_div_left  = arm_left / 4;
+    uint8_t arm_div_right = arm_right / 4;
+    get_outputArray(segment_op)->_armoire.segemnt_new(0,                             arm_div_left-1,                               false,  aramoire_side_left  );
+    get_outputArray(segment_op)->_armoire.segemnt_new(arm_left  + (arm_div_right*3), arm_left + (((arm_div_right*4)-1)+mod_right), true,   aramoire_side_right );
+    get_outputArray(segment_op)->_armoire.segemnt_new(arm_div_left,                  (arm_div_left*2)-1,                           false,  aramoire_side_left  );
+    get_outputArray(segment_op)->_armoire.segemnt_new(arm_left + (arm_div_right*2),   arm_left + ((arm_div_right*3)-1),            true,   aramoire_side_right );
+    get_outputArray(segment_op)->_armoire.segemnt_new(arm_div_left*2,                (arm_div_left*3)-1,                           false,  aramoire_side_left  );
+    get_outputArray(segment_op)->_armoire.segemnt_new(arm_left + arm_div_right,      arm_left + ((arm_div_right*2)-1),             true,   aramoire_side_right );
+    get_outputArray(segment_op)->_armoire.segemnt_new(arm_div_left*3,                ((arm_div_left*4)-1)+mod_left,                false,  aramoire_side_left  );
+    get_outputArray(segment_op)->_armoire.segemnt_new(arm_left,                      arm_left + (arm_div_right-1),                 true,   aramoire_side_right );  
+    Serial.printf_P(PSTR("[mod_left][%d]"), mod_left);
+    Serial.printf_P(PSTR("[mod_right][%d]"), mod_right);
+    Serial.printf_P(PSTR("[arm_div_left][%d]"), arm_div_left);
+    Serial.printf_P(PSTR("[arm_div_right][%d]\n"), arm_div_right);
+  }
 
 
   ALT_TRACEC("main", "LAMP new instance\n");
@@ -260,27 +468,53 @@ Device::Device(const char * name, uint8_t oc){
   new RemoteControl();
 
   ALT_TRACEC("main", "al_taskScheduler new instance\n");
-  _TaskScheduler = new al_taskScheduler(8+_output_count);
-
-  uint8_t pos = _output_count+1;
-  for(int i = 0; i < _taskCbListCnt; ++i) {
-    _TaskScheduler->get_task(pos)->set_callback(_taskCbList[i]._task); 
-    _TaskScheduler->get_task(pos)->set_taskDelay(ETD::ETD_TIMER, true, _taskCbList[i]._duration);
-    _TaskScheduler->get_task(pos)->set_iteration_max(-1);
-    _TaskScheduler->get_task(pos)->setup(true);
-    _TaskScheduler->get_task(pos)->set_enabled(true);        
-    pos++;
+  for (int i = 0; i < _output_count; ++i) {
+  _alml_taskSheduler.get_listItem().add(new alml_taskItem(nullptr,          0,       TASKNAME_OUTPUT,    TASKLEVEL_ALLWAYS));               // 0
   }
+  #ifdef ADS_PIN_IR
+  _alml_taskSheduler.get_listItem().add(new alml_taskItem(taskCb_ir,        50000,   TASKNAME_IR,        TASKLEVEL_ALLWAYS, taskSetup));    // 1
+  #endif
+  _alml_taskSheduler.get_listItem().add(new alml_taskItem(taskCb_udp,       100000,  TASKNAME_UDP,       TASKLEVEL_ALLWAYS, taskSetup));    // 2
+  _alml_taskSheduler.get_listItem().add(new alml_taskItem(taskCb_lamp,      50000,   TASKNAME_LAMP,      TASKLEVEL_ALLWAYS, taskSetup));    // 3
+  _alml_taskSheduler.get_listItem().add(new alml_taskItem(taskCb_program,   100000,  TASKNAME_PROGRAM,   TASKLEVEL_ALLWAYS, taskSetup));    // 4
+  _alml_taskSheduler.get_listItem().add(new alml_taskItem(taskCb_wifi,      100000,  TASKNAME_WIFI,      TASKLEVEL_ALLWAYS, taskSetup));    // 5
+  _alml_taskSheduler.get_listItem().add(new alml_taskItem(taskCb_webserver, 100000,  TASKNAME_WEBSERVER, TASKLEVEL_ALLWAYS, taskSetup));    // 6
+  #ifdef DEBUG_KEYBOARD
+  _alml_taskSheduler.get_listItem().add(new alml_taskItem(taskCb_serial,    50000,    TASKNAME_SERIAL,    TASKLEVEL_ALLWAYS, taskSetup));    // 7  
+  #endif
+  for(int i = 0; i < _alml_taskSheduler.get_listItem().size(); ++i) {
+    _alml_taskSheduler.get_list().add(new TaskSimple());
+    alml_taskItem * item = _alml_taskSheduler.get_listItem()[i];
+    item->setup(i);
+  }
+  _alml_taskSheduler.set_debug_byTaskName(TASKNAME_OUTPUT, false);  
+  _alml_taskSheduler.set_name_byTaskName(TASKNAME_OUTPUT,     "OUTPUT");  
+  #ifdef ADS_PIN_IR
+  _alml_taskSheduler.set_name_byTaskName(TASKNAME_IR,         "IR");    
+  #endif
+  _alml_taskSheduler.set_name_byTaskName(TASKNAME_UDP,        "UDP");  
+  _alml_taskSheduler.set_name_byTaskName(TASKNAME_LAMP,       "LAMP");  
+  _alml_taskSheduler.set_name_byTaskName(TASKNAME_PROGRAM,    "PROGRAM");  
+  _alml_taskSheduler.set_name_byTaskName(TASKNAME_WIFI,       "WIFI");  
+  _alml_taskSheduler.set_name_byTaskName(TASKNAME_WEBSERVER,  "WEBSERVER");  
+  #ifdef DEBUG_KEYBOARD
+   _alml_taskSheduler.set_name_byTaskName(TASKNAME_SERIAL,     "SERIAL");   
+   #endif 
+
   WCEVO_managerPtrGet()->set_cb_webserveAprEvent([](){
+    // Serial.printf_P(PSTR("set_cb_webserveAprEvent\n"));
     if (RemoteControlPtrGet()) RemoteControlPtrGet()->begin();
   });  
   WCEVO_managerPtrGet()->set_cb_serverEvent([](){
+    // Serial.printf_P(PSTR("set_cb_serverEvent\n"));
     if (RemoteControlPtrGet()) RemoteControlPtrGet()->begin();
   });
   WCEVO_managerPtrGet()->set_cb_webserverOn([](){
+    // Serial.printf_P(PSTR("set_cb_webserverOn\n"));
     _Webserver.setup(); 
   });
   WCEVO_managerPtrGet()->set_cb_webserveAprOn([](){
+    // Serial.printf_P(PSTR("set_cb_webserveAprOn\n"));
     _Webserver.setupAp(); 
   });
 
@@ -301,9 +535,9 @@ Device::Device(const char * name, uint8_t oc){
   /* extraction pour les nom par default de chaque strip */
   sprintf(buffer, "%s", ADS_OLOC);
   buffer_str = String(buffer);  
-	int rSize;
-	const char** Lines;
-	Lines = al_tools::explode(buffer_str, '.', rSize);	
+  int rSize;
+  const char** Lines;
+  Lines = al_tools::explode(buffer_str, '.', rSize);  
 
   boolean     isTw;
   uint16_t    nbLeds;
@@ -347,14 +581,10 @@ Device::Device(const char * name, uint8_t oc){
 
   }
   if (Lines){
-		for(int i = 0; i < rSize; ++i) {delete Lines[i];}delete[] Lines;				
+    for(int i = 0; i < rSize; ++i) {delete Lines[i];}delete[] Lines;        
   }
 
-  DynamicJsonDocument doc(2048);
-  JsonObject root = doc.to<JsonObject>();
-  JsonObject oOjbect = root.createNestedObject(FPSTR(ALMLPT_OUTPUTS));
-  outputs_toJson(oOjbect, false, true);
-  serializeJsonPretty(doc,Serial);Serial.println();
+
 
   // delay(2);
   
@@ -362,15 +592,53 @@ Device::Device(const char * name, uint8_t oc){
     LAMPPTRGET()->effectsTimer(i, T_ENABLE);
   }
   
+#ifdef ALML_TFT
+
+  tft_output_1 = new Tft_txt(&_almlTft, _almlU8g2);
+  tft_output_1->textColor(C_YELLOW, C_BLACK);
+  tft_output_1->u8g2_mod(1);
+  tft_output_1->u8g2_font(u8g2_font_helvR14_tf);
+  tft_output_1->textPos(105, 115);
+  tft_output_1->text("tft_output_1");
+  tft_output_1->u8g2_setup();
+
+  tft_output_2 = new Tft_txt(&_almlTft, _almlU8g2);
+  tft_output_2->textColor(C_YELLOW, C_BLACK);
+  tft_output_2->u8g2_mod(1);
+  tft_output_2->u8g2_font(u8g2_font_helvR14_tf);
+  tft_output_2->textPos(155, 140);
+  tft_output_2->text("tft_output_2");
+  tft_output_2->u8g2_setup();
+
+  tft_output_3 = new Tft_txt(&_almlTft, _almlU8g2);
+  tft_output_3->textColor(C_YELLOW, C_BLACK);
+  tft_output_3->u8g2_mod(1);
+  tft_output_3->u8g2_font(u8g2_font_helvR14_tf);
+  tft_output_3->textPos(155, 160);
+  tft_output_3->text("tft_output_3");
+  tft_output_3->u8g2_setup();
+
+  tft_output_4 = new Tft_txt(&_almlTft, _almlU8g2);
+  tft_output_4->textColor(C_YELLOW, C_BLACK);
+  tft_output_4->u8g2_mod(1);
+  tft_output_4->u8g2_font(u8g2_font_helvR14_tf);
+  tft_output_4->textPos(155, 180);
+  tft_output_4->text("tft_output_4");
+  tft_output_4->u8g2_setup();
+#endif
 
     // get_outputArray(0)->_armoire.segemnt_leftRight((arm_div_left - mod_left)-1);
     // get_outputArray(0)->set_color(0, CRGB(0, 255, 0), 80, 255, 255);
 // FastLED.show();
+    // 
+  testTft(0);
+
   ALT_TRACEC("main", "--\n");
 }
 
-al_taskScheduler * Device::get_taskSheduler() {return _TaskScheduler;}
-TaskSimple * Device::get_task(uint8_t p) {return _TaskScheduler->get_task(p);}
+alml_taskSheduler * Device::get_taskSheduler() {return &_alml_taskSheduler;}
+TaskSimple * Device::get_task(uint8_t p) {return _alml_taskSheduler.get_task(p);}
+
 
 void Device::get_outputCount(uint8_t & ret){ret = _output_count;}
 
@@ -392,9 +660,42 @@ const char * Device::get_name() {return _name;}
  * @brief      loop destiner a etre executer dans le main.cpp
  */
 void Device::loop(){
-  _TaskScheduler->loop();
+  // _TaskScheduler->loop();
+  _alml_taskSheduler.loop();
   if(_task_reset) {if (_task_reset->isEnabled()) _task_reset->execute();}
-
+  if ( WCEVO_managerPtrGet()->updateModReady() ){
+    wcevo_updateMod_t mod = WCEVO_managerPtrGet()->get_updateMod();
+    WCEVO_managerPtrGet()->set_updateModEnd() ;
+    #ifdef ALML_TFT
+      _almlTft.fillRect(
+          0, 
+          0, 
+          _almlTft.width(), 
+          70, 
+          ILI9341_BLACK
+        ); 
+      Tft_txt temp_2(&_almlTft, _almlU8g2);
+      const char * value;
+      switch (mod) {
+          case wcevo_updateMod_t::WCEVO_UM_STA  : 
+            ALSYSINFO_getValByKey(ALSI_STAIP, value);
+            temp_2.drawString(5, 30, "La lampe est connecter au routeur", _almlTft.color565(0, 255, 0),    &SansSerif_plain_14);
+            temp_2.drawString(5, 50, "L'adresse de la lampe est: " + al_tools::ch_toString(value), _almlTft.color565(255, 255, 255),  &SansSerif_plain_13);
+          break;
+          case wcevo_updateMod_t::WCEVO_UM_STAAP: 
+            ALSYSINFO_getValByKey(ALSI_STAIP, value);
+            temp_2.drawString(5, 30, "La lampe est connecter au routeur+ap", _almlTft.color565(0, 255, 0),    &SansSerif_plain_14);
+            temp_2.drawString(5, 50, "L'adresse de la lampe est: " + al_tools::ch_toString(value), _almlTft.color565(255, 255, 255),  &SansSerif_plain_13);
+          break;
+          case wcevo_updateMod_t::WCEVO_UM_AP   : 
+            temp_2.drawString(5, 30, "La lampe est en point d'acces", _almlTft.color565(0, 255, 0), &SansSerif_plain_14);
+            temp_2.drawString(5, 50, "L'adresse de la lampe est: 8.8.8.8", _almlTft.color565(255, 255, 255),  &SansSerif_plain_13);
+          break;
+          default:break;
+      }
+    #endif      
+    
+  }
 }
 
 
@@ -426,9 +727,7 @@ boolean Device::isColorRequest(const String & cmd){
 }
 
 boolean Device::isEffectRequest(const String & cmd){
-  if      (cmd == FPSTR(req_ledBri))        return true; 
-  else if (cmd == FPSTR(req_ledBriIncr))    return true; 
-  else if (cmd == FPSTR(req_eff_activ))     return true; 
+  if (cmd == FPSTR(req_eff_activ))     return true; 
   else if (cmd == FPSTR(req_eff_next))      return true;
   else if (cmd == FPSTR(req_eff_prev))      return true;
   else if (cmd == FPSTR(req_eff_load))      return true;
@@ -452,10 +751,14 @@ boolean Device::isEffectLoadRequest(const String & cmd){
 }
 
 boolean Device::outputs_requestEffect(){
-  String req = OutputSav[FPSTR(ALMLPT_REQUEST)].as<String>();
+  String req = _DeviceSave.get_lastRequest();
   return isEffectRequest(req);
+  // return true;
 }
-
+String Device::get_lastRequest() const {
+  // return OutputSav[FPSTR(ALMLPT_REQUEST)].as<String>();
+  return _DeviceSave.get_lastRequest();
+}
 /**
  * @brief      
  * @details   si command de type suivant/precedent
@@ -466,67 +769,77 @@ boolean Device::outputs_requestEffect(){
  *
  * @return     nom d'origine de l'effet via String
  */
-void Output_set_eff (uint8_t sP, String &result, const String & cmd, const JsonObject & value){
-  if (!ProgramPtrGet()) return;
-  if ((cmd == FPSTR(req_eff_next)))       {DevicePtrGet()->get_outputArray(sP)->set_effActiv(true);ProgramPtrGet()->set_itemNext();ProgramPtrGet()->get_itemBase(result);}
-  else if ((cmd == FPSTR(req_eff_prev)))  {DevicePtrGet()->get_outputArray(sP)->set_effActiv(true);ProgramPtrGet()->set_itemPrev();ProgramPtrGet()->get_itemBase(result);} 
+boolean Output_set_eff (uint8_t sP, String &result, const String & cmd, const JsonObject & value){
+  if (!ProgramPtrGet()) return false;
+  if ((cmd == FPSTR(req_eff_next)))       {DevicePtrGet()->get_outputArray(sP)->set_effActiv(true);ProgramPtrGet()->set_itemNext();ProgramPtrGet()->get_itemBase(result);return true;}
+  else if ((cmd == FPSTR(req_eff_prev)))  {DevicePtrGet()->get_outputArray(sP)->set_effActiv(true);ProgramPtrGet()->set_itemPrev();ProgramPtrGet()->get_itemBase(result);return true;} 
   else if ((cmd == FPSTR(req_eff_load))) {
     result = value[F("v")].as<String>();
-  }    
+    return true;
+  } 
+  return false;   
 }
-void Output_set_eff_f(uint8_t sP, String &result, const String & cmd, const JsonObject & value){
-  if (!ProgramPtrGet()) return;
-  if (cmd != FPSTR(req_eff_f)) return;
+boolean Output_set_eff_f(uint8_t sP, String &result, const String & cmd, const JsonObject & value){
+  if (!ProgramPtrGet()) return false;
+  if (cmd != FPSTR(req_eff_f)) return false;
 
   String action = value[F("c")].as<String>();
-  if ((action == FPSTR(req_eff_next)))       {DevicePtrGet()->get_outputArray(sP)->set_effActiv(true);ProgramPtrGet()->set_itemNext();ProgramPtrGet()->get_itemBase(result);}
-  else if ((action == FPSTR(req_eff_prev)))  {DevicePtrGet()->get_outputArray(sP)->set_effActiv(true);ProgramPtrGet()->set_itemPrev();ProgramPtrGet()->get_itemBase(result);} 
+  if ((action == FPSTR(req_eff_next)))       {DevicePtrGet()->get_outputArray(sP)->set_effActiv(true);ProgramPtrGet()->set_itemNext();ProgramPtrGet()->get_itemBase(result);return true;}
+  else if ((action == FPSTR(req_eff_prev)))  {DevicePtrGet()->get_outputArray(sP)->set_effActiv(true);ProgramPtrGet()->set_itemPrev();ProgramPtrGet()->get_itemBase(result);return true;} 
   else if ((action == FPSTR(req_eff_load))) {
     DevicePtrGet()->get_outputArray(sP)->set_effActiv(true);
     uint8_t p = value[F("v")].as<uint8_t>();
     ProgramPtrGet()->set_itemById(p);
     ProgramPtrGet()->get_itemBase(result);
+    return true;
   } 
+  return false;
 }
 
-void Device::parseJson_output(uint8_t p , String & nextEffect, const String & req, JsonObject val) {
+boolean Device::parseJson_output(uint8_t p , String & nextEffect, const String & req, JsonObject val) {
 
-  get_outputArray(p)->set_select(req, val);
-  if (!get_outputArray(p)->get_select()) return;
+  if (get_outputArray(p)->set_select(req, val))           return true;
+  if (!get_outputArray(p)->get_select()) return false;
 
-  get_outputArray(p)->set_onoff(req, val);
-  get_outputArray(p)->set_toggle(req, val);
+  if (get_outputArray(p)->set_onoff(req, val))            return true;
+  if (get_outputArray(p)->set_toggle(req, val))           return true;
 
-  if (!get_outputArray(p)->get_onoff()) return; 
+  if (!get_outputArray(p)->get_onoff()) return false; 
 
-  get_outputArray(p)->set_etage(req, val);
-  get_outputArray(p)->set_bri(req, val);
-  get_outputArray(p)->set_briIncr(req, val);
-  get_outputArray(p)->set_hsv_hIncr(req, val);
+  if (get_outputArray(p)->set_etage(req, val))            return true;
+  if (get_outputArray(p)->set_bri(req, val))              return true;
+  if (get_outputArray(p)->set_briIncr(req, val))          return true;
+  if (get_outputArray(p)->set_hsv_hIncr(req, val))        return true;
 
-  get_outputArray(p)->set_rgb_f(req, val);
-  get_outputArray(p)->set_tw_f(req, val);
+  if (get_outputArray(p)->set_rgb_f(req, val))            return true;
+  if (get_outputArray(p)->set_tw_f(req, val))             return true;
 
-  get_outputArray(p)->set_eff_activ(req, val);
+  if (get_outputArray(p)->set_eff_activ(req, val))        return true;
   // get_outputArray(p)->set_eff_f(req, val);
-  get_outputArray(p)->set_eff_autoplay(req, val);   
+  if (get_outputArray(p)->set_eff_autoplay(req, val))     return true;
 
 
-  if (nextEffect=="") {Output_set_eff_f(p, nextEffect, req, val);} 
+  if (nextEffect=="") {
+    // if (Output_set_eff_f(p, nextEffect, req, val))        return true;
+    Output_set_eff_f(p, nextEffect, req, val);
+  } 
 
   if (get_outputArray(p)->get_eff_activ()) {
 
-    LAMPPTRGET()->effectsLoop_Timer(req, val);
-    get_outputArray(p)->set_eff_colorMod(req, val);
-    get_outputArray(p)->set_eff_id(req, val);
-    get_outputArray(p)->set_eff_rgb1(req, val);
-    get_outputArray(p)->set_eff_bri(req, val);   
-    get_outputArray(p)->set_eff_scale(req, val);   
-    get_outputArray(p)->set_eff_speed(req, val);   
-    get_outputArray(p)->set_eff_speedIncr(req, val);   
+    if (LAMPPTRGET()->effectsLoop_Timer(req, val))        return true;
+    if (get_outputArray(p)->set_eff_colorMod(req, val))   return true;
+    if (get_outputArray(p)->set_eff_id(req, val))         return true;
+    if (get_outputArray(p)->set_eff_rgb1(req, val))       return true;
+    if (get_outputArray(p)->set_eff_bri(req, val))        return true;   
+    if (get_outputArray(p)->set_eff_scale(req, val))      return true;   
+    if (get_outputArray(p)->set_eff_speed(req, val))      return true;   
+    if (get_outputArray(p)->set_eff_speedIncr(req, val))  return true;   
 
     // changemant unique de l'effet (ne doit sexcuter qu'une fois dansl le loop)
-    if (nextEffect=="") {Output_set_eff(p, nextEffect, req, val);} 
+    if (nextEffect=="") {
+      // if (Output_set_eff(p, nextEffect, req, val))        return true;
+      Output_set_eff(p, nextEffect, req, val);
+    } 
 
     // chargement de l'effet pour chaque strip        
     if (nextEffect!="") {
@@ -534,21 +847,146 @@ void Device::parseJson_output(uint8_t p , String & nextEffect, const String & re
         String find = FPSTR(_effeNamIDList[j]._nameId);
         if (find == nextEffect) {
           LAMPPTRGET()->effectChangeByPos(p, j, LAMPPTRGET()->isFaderOn(), true);
-          break;
+          return true;
         }
       }
     }
-    return;
+
+    return false;
   }
 
-  if (!isColorRequest(req)) return;
-  get_outputArray(p)->set_rgb(req, val);
-  get_outputArray(p)->set_hsv_h(req, val);
-  get_outputArray(p)->set_hsv_s(req, val);
-  get_outputArray(p)->set_hsv_v(req, val);
-  get_outputArray(p)->set_tw(req, val);      
-  get_outputArray(p)->set_tw_v(req, val);    
+  if (!isColorRequest(req)) return false;
+  if (get_outputArray(p)->set_rgb(req, val))            return true;
+  if (get_outputArray(p)->set_hsv_h(req, val))          return true;
+  if (get_outputArray(p)->set_hsv_s(req, val))          return true;
+  if (get_outputArray(p)->set_hsv_v(req, val))          return true;
+  if (get_outputArray(p)->set_tw(req, val))             return true;      
+  if (get_outputArray(p)->set_tw_v(req, val))           return true; 
+
+  return false;   
 }
+
+
+
+
+// tft_output_2 = new Tft_txt(&_almlTft, _almlU8g2);
+// tft_output_2->canvas_create(10, 20, 40, 20);
+// tft_output_2->text_font(&SansSerif_plain_14);
+// tft_output_2->textColor(C_WHITE, 0);
+// 
+
+
+void Device::testTft(int8_t sp){
+#ifdef ALML_TFT
+  static  boolean       lastState_1 = true;
+  static  boolean       lastState_2 = true;
+  static  String        effName     = "";
+          Output        * ptr       = get_outputArray(sp);
+          EffectWorker  * eff       = _effects[sp];
+          Tft_txt       temp_2(&_almlTft, _almlU8g2);  
+
+  if (lastState_1 != ptr->get_eff_activ()) {
+    _almlTft.fillRect(
+        0, 
+        80, 
+        _almlTft.width(), 
+        _almlTft.height()-80, 
+        ILI9341_BLACK
+      );
+    lastState_1 = ptr->get_eff_activ();
+    effName = "";
+  }
+  if (lastState_2 != ptr->get_onoff()) {
+    _almlTft.fillRect(
+        0, 
+        80, 
+        _almlTft.width(), 
+        _almlTft.height()-80, 
+        ILI9341_BLACK
+      );
+    lastState_2 = ptr->get_onoff();
+    effName = "";
+  }
+
+  _almlTft.drawBitmap(5, 80, lightBitmap, 40, 40, ptr->get_onoff() ? _almlTft.color565(0,255,0) : _almlTft.color565(255,0,0));
+
+  if (ptr->get_onoff()) {
+    if (ptr->get_eff_activ()) {
+
+      boolean updBri    = false;
+      boolean updSpeed  = false;
+      boolean updScale  = false;
+
+      if (eff->worker) {
+        if (_eff_bri._value != eff->getControls()[0]->getVal().toInt()) updBri = true;
+        _eff_bri._value     = eff->getControls()[0]->getVal().toInt();
+        _eff_bri._state     = eff->getControls()[0]->getTypeState();
+
+        if (_eff_speed._value != eff->getControls()[1]->getVal().toInt()) updSpeed = true;
+        _eff_speed._value   = eff->getControls()[1]->getVal().toInt();
+        _eff_speed._state   = eff->getControls()[1]->getTypeState();
+
+        if (_eff_scale._value != eff->getControls()[2]->getVal().toInt()) updScale = true;
+        _eff_scale._value   = eff->getControls()[2]->getVal().toInt();
+        _eff_scale._state   = eff->getControls()[2]->getTypeState();
+      }
+
+      _almlTft.drawBitmap(55, 80, epd_bitmap, 40, 40, _almlTft.color565(255,255,255));
+      temp_2.drawString(105, 95, "Effet en cour:", _almlTft.color565(255, 255, 255), &SansSerif_plain_12);
+      if (tft_output_1 && eff->worker && effName != eff->getEffectName()) {
+        effName = eff->getEffectName();
+        tft_output_1->textColor(C_WHITE, C_BLACK);
+        tft_output_1->u8g2_setup();
+        tft_output_1->u8g2_drawRect( eff->getEffectName() );
+      }
+
+      if (tft_output_2 && tft_output_3 && tft_output_4 && eff->worker) {
+        if (_eff_bri._state == 0) {
+          if (updBri) temp_2.u8g2_draw(5, 140, FPSTR(ALMLPT_LEDS_005), _almlTft.color565(255,255,255), u8g2_font_helvR14_tf);
+          if (updBri) tft_output_2->u8g2_drawRect( String(_eff_bri._value) );       
+        } else {
+          _almlTft.fillRect(0, 123, _almlTft.width(), 18, ILI9341_BLACK);
+        }
+        if (_eff_speed._state == 0) {
+          if (updSpeed) temp_2.u8g2_draw(5, 160, FPSTR(ALMLPT_LEDS_006), _almlTft.color565(255,255,255), u8g2_font_helvR14_tf);
+          if (updSpeed) tft_output_3->u8g2_drawRect( String(_eff_speed._value) );      
+        } else {
+          _almlTft.fillRect(0, 143, _almlTft.width(), 18, ILI9341_BLACK);
+        }
+        if (_eff_scale._state == 0) {
+          if (updScale) temp_2.u8g2_draw(5, 180, FPSTR(ALMLPT_LEDS_007), _almlTft.color565(255,255,255), u8g2_font_helvR14_tf);
+          if (updScale) tft_output_4->u8g2_drawRect( String(_eff_scale._value) );        
+        } else {
+          _almlTft.fillRect(0, 163, _almlTft.width(), 18, ILI9341_BLACK);
+        }
+      }
+    }else{
+      CRGB newColor = CHSV(ptr->get_hsv_h(), ptr->get_hsv_s(), 255);
+      _almlTft.drawBitmap(55, 80, rgbsBitmap, 40, 40, (!ptr->get_isTw()) ? _almlTft.color565(newColor.r, newColor.g, newColor.b) : _almlTft.color565(255, 255, 255));
+      temp_2.u8g2_draw(105, 115, FPSTR(ALMLPT_LEDS_009), (!ptr->get_isTw()) ? _almlTft.color565(newColor.r, newColor.g, newColor.b) : _almlTft.color565(255, 255, 255), u8g2_font_helvR14_tf);
+
+      temp_2.u8g2_draw(5, 140, FPSTR(ALMLPT_LEDS_005), _almlTft.color565(255,255,255), u8g2_font_helvR14_tf);
+      tft_output_2->u8g2_drawRect( String(!ptr->get_isTw()?ptr->get_hsv_v():ptr->get_tw()));
+
+      (!ptr->get_isTw()) ? temp_2.u8g2_draw(5, 160, FPSTR(ALMLPT_LEDS_008), _almlTft.color565(255,255,255), u8g2_font_helvR14_tf) : _almlTft.fillRect(0, 143, _almlTft.width(), 18, ILI9341_BLACK);
+      if (!ptr->get_isTw()) tft_output_3->u8g2_drawRect( String(ptr->get_hsv_h()));
+    }
+  } else {
+      effName = "";
+      _eff_bri._value   = -1;
+      _eff_speed._value = -1;
+      _eff_scale._value = -1;
+      _almlTft.fillRect(
+          5, 
+          140, 
+          _almlTft.width(), 
+          _almlTft.height()-140, 
+          ILI9341_BLACK
+        );      
+  }
+#endif   
+}
+
 
 /**
  * @brief     traintements de requettes via nom de device et position du strip/output
@@ -575,42 +1013,12 @@ void Device::parseJson_output(DynamicJsonDocument & doc){
   JsonObject  val     = doc[FPSTR(ALMLPT_VAL)];                  // valeur de la requette
   uint8_t     pos     = doc[FPSTR(ALMLPT_OUTPUT)].as<uint8_t>(); // poistion output/strip
 
-  doc.clear();   // ? UTILE OU PAS OU TEST AVEC LE HEAP
-  
-
-  /**
-   * Module de sauvegarde
-   *  quand un control depuis l'ui et utiliser 
-   *  ajout unique de la postion du strip utiliser
-   *  une fois le control ui fini (indiquer via un poquet avec l'op: 4) traitement de la sauvgarde
-   *  
-   *    1 -> clear le doc json
-   *    2 -> mod ??
-   *    3 -> création de larray
-   *    4 -> ajout de la position de l'output a sauvegardé
-   */
-  if (_outputsSav) {
-    OutputSav.clear(); 
-    OutputSav.garbageCollect();
-    JsonObject root = OutputSav.to<JsonObject>(); 
-    root[FPSTR(ALMLPT_MOD)] = 3;
-    root[FPSTR(ALMLPT_REQUEST)] = req;
-    OutputSavArray = root.createNestedArray(FPSTR(ALMLPT_OUTPUTS));   
-    OutputSavArray.add(pos);
-
-    _outputsSav = false;
-  }
-
-
-  /** IAM WRONG ?? utile pour les selection multiple
-   * si une reuqette necissite de changer/charger un effet 
-   *  initialisation du nouvel effet une seul foi : hor de la boucle, pour ne pas avoir d'effet different sur chaque strip
-   */
   String nextEffect = "";
   Output_set_eff(pos, nextEffect, req, val);
 
-  parseJson_output(pos, nextEffect, req, val)  ;
-
+  boolean savRequest = parseJson_output(pos, nextEffect, req, val);
+  _DeviceSave.new_req(savRequest, pos, req.c_str());
+  if (savRequest) testTft(pos);
 }
 
 /**
@@ -628,33 +1036,46 @@ void Device::parseJson_output(DynamicJsonDocument & doc){
  * @param      doc deserialize depuis le paquet udp reçu
  */
 void Device::parseJson_device(DynamicJsonDocument & doc){
-  boolean result = true;
+  boolean result      = true;
+  String  nextEffect  = "";
+  boolean savRequest  = false;
+  int8_t  update      = -1;
+
+
+  JsonArray reqArr = doc[F("A")].as<JsonArray>();
+  if (!reqArr.isNull()) {
+    Serial.printf_P(PSTR("JSON START ARRAY\n"));
+
+    for (JsonObject obj : reqArr) {
+      String      req     = obj[FPSTR(ALMLPT_REQ)].as<String>();
+      JsonObject  val     = obj[FPSTR(ALMLPT_VAL)]; 
+      for(int i=0; i<_output_count; i++){
+        savRequest = parseJson_output(i, nextEffect, req, val);
+        _DeviceSave.new_req(savRequest, i, req.c_str());
+        if (savRequest) update = i;
+      }
+    } 
+
+    if (update>=0) testTft(update);
+
+    return;
+  }
+
+
   if (!doc.containsKey(FPSTR(ALMLPT_REQ))) result = false; 
   if (!doc.containsKey(FPSTR(ALMLPT_VAL))) result = false; 
   if (!result) {return;}
 
-  String      req     = doc[FPSTR(ALMLPT_REQ)].as<String>();
-  JsonObject  val     = doc[FPSTR(ALMLPT_VAL)];  
-
-  if (_outputsSav) {
-    OutputSav.clear(); 
-    OutputSav.garbageCollect();
-    JsonObject root = OutputSav.to<JsonObject>(); 
-    root[FPSTR(ALMLPT_MOD)] = 1;
-    root[FPSTR(ALMLPT_REQUEST)] = req;
-    OutputSavArray = root.createNestedArray(FPSTR(ALMLPT_OUTPUTS));    
-  }
-
-  String nextEffect="";
+  String      req = doc[FPSTR(ALMLPT_REQ)].as<String>();
+  JsonObject  val = doc[FPSTR(ALMLPT_VAL)];  
 
   for(int i=0; i<_output_count; i++){
-    if (_outputsSav) OutputSavArray.add(i);
-    parseJson_output(i, nextEffect, req, val)  ;
+    savRequest = parseJson_output(i, nextEffect, req, val);
+    _DeviceSave.new_req(savRequest, i, req.c_str());
+    if (savRequest) update = i;
   }
+  if (update>=0) testTft(update);
 
-  if (_outputsSav) {
-    _outputsSav = false;
-  }
 }
 
 /**
@@ -677,21 +1098,13 @@ void Device::parseJson_outpitListByDn(DynamicJsonDocument & doc){
   if (!doc.containsKey(FPSTR(ALMLPT_A)))   result = false; 
   if (!result) {return;}
 
-  String      req     = doc[FPSTR(ALMLPT_REQ)].as<String>();
-  JsonObject  val     = doc[FPSTR(ALMLPT_VAL)];
-  JsonArray   list_dn = doc[FPSTR(ALMLPT_A)];
-  String      thisDn  = al_tools::ch_toString(_name);
-
-  if (_outputsSav) {
-    OutputSav.clear(); 
-    OutputSav.garbageCollect();
-    JsonObject root = OutputSav.to<JsonObject>(); 
-    root[FPSTR(ALMLPT_MOD)] = 0;
-    root[FPSTR(ALMLPT_REQUEST)] = req;
-    OutputSavArray = root.createNestedArray(FPSTR(ALMLPT_OUTPUTS));
-  }
-  
-  String nextEffect="";
+  String      req         = doc[FPSTR(ALMLPT_REQ)].as<String>();
+  JsonObject  val         = doc[FPSTR(ALMLPT_VAL)];
+  JsonArray   list_dn     = doc[FPSTR(ALMLPT_A)];
+  String      thisDn      = al_tools::ch_toString(_name);
+  String      nextEffect  = "";
+  int8_t      update      = -1;
+  boolean     savRequest  = false;
 
   for (JsonObject item : list_dn) {
 
@@ -703,17 +1116,17 @@ void Device::parseJson_outpitListByDn(DynamicJsonDocument & doc){
     if (!item.containsKey(FPSTR(ALMLPT_A))) continue;
     
     JsonArray list_output = item[FPSTR(ALMLPT_A)].as<JsonArray>();
+
     for (uint8_t item_2 : list_output) {
-
-      if (_outputsSav) {
-        OutputSavArray.add(item_2);
-      }
-
-      parseJson_output(item_2, nextEffect, req, val)  ;
-
+      savRequest = parseJson_output(item_2, nextEffect, req, val);
+      _DeviceSave.new_req(savRequest, item_2, req.c_str());
+      if (savRequest) update = item_2;      
     }
-    _outputsSav = false;
+
   }
+
+  if (update>=0) testTft(update);
+
 }
 
 /**
@@ -729,38 +1142,73 @@ void Device::parseJson_outpitListByDn(DynamicJsonDocument & doc){
  * @param[in]  fs        si le json va etre ecrif en memoir spiff ou envoyer via paquet udp
  */
 void Device::output_toJson(uint8_t pos, JsonObject & value, boolean shortKey, boolean fs, boolean eff){
+  if (!shortKey) {
+    String s;
 
-      value[F("0")]           = _outputArray[pos].get_hsv_h();
-      value[F("1")]           = _outputArray[pos].get_hsv_s();
-      value[F("2")]           = _outputArray[pos].get_hsv_v();
-      value[F("3")]           = _outputArray[pos].get_rgb_r();
-      value[F("4")]           = _outputArray[pos].get_rgb_g();
-      value[F("5")]           = _outputArray[pos].get_rgb_b();
-      value[F("6")]           = _outputArray[pos].get_tw();
-      value[F("7")]           = _outputArray[pos].get_isTw();
-      value[F("8")]           = _outputArray[pos].get_bri();
-      value[F("9")]           = _outputArray[pos].get_select();
-      value[F("10")]          = _outputArray[pos].get_onoff();
-      value[F("11")]          = _outputArray[pos].get_type();
-      value[F("12")]          = _outputArray[pos].get_pin();
-      value[F("13")]          = _outputArray[pos].get_size();
-      value[F("14")]          = _outputArray[pos].get_name();   
-      value[F("15")]          = _outputArray[pos].get_tw_v();      
-      value[F("16")]          = _outputArray[pos].get_eff_activ(); 
-      if (_effects[pos]) {
-      value[F("17")]          = _effects[pos]->getEn();                       
-      }
-      // value[F("19")]          = _outputArray[pos].get_isTw() ? _outputArray[pos].get_tw() : _outputArray[pos].get_hsv_v();
-      if (_outputArray[pos].get_eff_activ()) value[F("19")] = _effects[pos]->getControls()[0]->getVal(); 
-      else { value[F("19")] =  _outputArray[pos].get_isTw() ? _outputArray[pos].get_tw() : _outputArray[pos].get_hsv_v();}    
-        
-      value[F("20")]          = _outputArray[pos]._armoireEtage; 
-      value[F("21")]          = _outputArray[pos]._isArmoire; 
-
-      if (_effects[pos] && eff && _outputArray[pos].get_eff_activ() ) {
-        JsonObject effectObj = value.createNestedObject("effects");
-        _effects[pos]->geteffconfig(pos, effectObj, LAMPPTRGET()->get_globalBrightness(pos, 0));
-      }
+    value[FPSTR(req_lampHue)]     = _outputArray[pos].get_hsv_h();
+    value[FPSTR(req_lampSat)]     = _outputArray[pos].get_hsv_s();
+    value[FPSTR(req_lampBri)]     = _outputArray[pos].get_hsv_v();
+    s=FPSTR(req_lampSetColor);
+    s.concat(" R");
+    value[s]                      = _outputArray[pos].get_rgb_r();
+    s=FPSTR(req_lampSetColor);
+    s.concat(" G");    
+    value[s]                      = _outputArray[pos].get_rgb_g();
+    s=FPSTR(req_lampSetColor);
+    s.concat(" B");      
+    value[s]                      = _outputArray[pos].get_rgb_b();
+    value[FPSTR(req_lampWhite)]   = _outputArray[pos].get_tw();
+    value[FPSTR(req_lampWhite)]   = _outputArray[pos].get_isTw();
+    value[F("bri")]               = _outputArray[pos].get_bri();
+    value[FPSTR(req_s_output)]    = _outputArray[pos].get_select();
+    value[FPSTR(req_lampOnOff)]   = _outputArray[pos].get_onoff();
+    value[F("type")]              = _outputArray[pos].get_type();
+    value[F("pin")]               = _outputArray[pos].get_pin();
+    value[F("size")]              = _outputArray[pos].get_size();
+    value[F("name")]              = _outputArray[pos].get_name();   
+    value[FPSTR(req_lampWhite_v)] = _outputArray[pos].get_tw_v();      
+    value[FPSTR(req_eff_activ)]   = _outputArray[pos].get_eff_activ(); 
+    if (_effects[pos]) {
+    value[F("getEn")]             = _effects[pos]->getEn();                       
+    }
+    // value[F("19")]          = _outputArray[pos].get_isTw() ? _outputArray[pos].get_tw() : _outputArray[pos].get_hsv_v();
+    if (_outputArray[pos].get_eff_activ()) value[FPSTR(req_lampBri)] = _effects[pos]->getControls()[0]->getVal(); 
+    else { value[FPSTR(req_lampBri)] =  _outputArray[pos].get_isTw() ? _outputArray[pos].get_tw() : _outputArray[pos].get_hsv_v();}    
+    
+    value[FPSTR(req_etage)]       = _outputArray[pos]._armoireEtage; 
+    value[F("isArmoire")]         = _outputArray[pos]._isArmoire;         
+  }else{
+    value[F("0")]           = _outputArray[pos].get_hsv_h();
+    value[F("1")]           = _outputArray[pos].get_hsv_s();
+    value[F("2")]           = _outputArray[pos].get_hsv_v();
+    value[F("3")]           = _outputArray[pos].get_rgb_r();
+    value[F("4")]           = _outputArray[pos].get_rgb_g();
+    value[F("5")]           = _outputArray[pos].get_rgb_b();
+    value[F("6")]           = _outputArray[pos].get_tw();
+    value[F("7")]           = _outputArray[pos].get_isTw();
+    value[F("8")]           = _outputArray[pos].get_bri();
+    value[F("9")]           = _outputArray[pos].get_select();
+    value[F("10")]          = _outputArray[pos].get_onoff();
+    value[F("11")]          = _outputArray[pos].get_type();
+    value[F("12")]          = _outputArray[pos].get_pin();
+    value[F("13")]          = _outputArray[pos].get_size();
+    value[F("14")]          = _outputArray[pos].get_name();   
+    value[F("15")]          = _outputArray[pos].get_tw_v();      
+    value[F("16")]          = _outputArray[pos].get_eff_activ(); 
+    if (_effects[pos]) {
+    value[F("17")]          = _effects[pos]->getEn();                       
+    }
+    // value[F("19")]          = _outputArray[pos].get_isTw() ? _outputArray[pos].get_tw() : _outputArray[pos].get_hsv_v();
+    if (_outputArray[pos].get_eff_activ()) value[F("19")] = _effects[pos]->getControls()[0]->getVal(); 
+    else { value[F("19")] =  _outputArray[pos].get_isTw() ? _outputArray[pos].get_tw() : _outputArray[pos].get_hsv_v();}    
+      
+    value[F("20")]          = _outputArray[pos]._armoireEtage; 
+    value[F("21")]          = _outputArray[pos]._isArmoire;       
+  }
+  if (_effects[pos] && eff && _outputArray[pos].get_eff_activ() ) {
+    JsonObject effectObj = value.createNestedObject("effects");
+    _effects[pos]->geteffconfig(pos, effectObj, LAMPPTRGET()->get_globalBrightness(pos, 0));
+  }
     // ALT_TRACEC("main", "[eff][pos: %d][name: %s]\n", _effects[pos]->getEn()  , _effects[pos]->getEffectName().c_str() );    
 }
 
@@ -814,9 +1262,9 @@ void Device::outputs_toAppi(String & out, boolean eff, boolean prog, uint8_t eff
     root[FPSTR(ALMLPT_CLI)]= FPSTR(ALMLPT_RGB);
     if (LAMPPTRGET()->isFaderOn()){
       if (effLoad == 0) {
-        uint8_t p = isEffectLoadRequest(OutputSav[FPSTR(ALMLPT_REQUEST)].as<String>()) ? 1 : 0;
-        root[F("effload")] = p;
-        _effLoad = p;
+        // uint8_t p = isEffectLoadRequest(OutputSav[FPSTR(ALMLPT_REQUEST)].as<String>()) ? 1 : 0;
+        root[F("effload")] = 0;
+        _effLoad = 0;
 
       } else if (effLoad == 1) { 
         root[F("effload")] = 1;
@@ -904,36 +1352,21 @@ void Device::armoiretofs(uint8_t pos){
   JsonObject object;
   JsonObject root   = json.to<JsonObject>();  
 
-
   object  = root.createNestedObject("select");  
   object[F("0")] = _outputArray[pos]._armoireEtage;
 
-  
-    aramoire_segemnts   * ptr;
-    aramoire_segemnt  * setSeg  = &_outputArray[pos]._armoire;
-    uint8_t maxSeg = 0 ;
-    object = root.createNestedObject("etage");
-    setSeg->get_segmentCnt(maxSeg);          
-    for (int i = 0; i < maxSeg; ++i) {
-      ptr = setSeg->get_segment(i);
-      object[String(i)] = String(ptr->_c1.r) + "." + String(ptr->_c1.g) + "." + String(ptr->_c1.b) ;
-      object["hsv_"+String(i)] = String(ptr->_hsv_h) + "." + String(ptr->_hsv_s) + "." + String(ptr->_hsv_v) ;
-      // object["coff_"+String(i)] = String(ptr->_coff.r) + "." + String(ptr->_coff.g) + "." + String(ptr->_coff.b) ;
-      // String s1 = "isTw_" + String(i);
-      // String s2 = "tw_" + String(i);
-      // String s3 = "tw_v_" + String(i);
-      object["tw_"+String(i)] = String(ptr->_isTw) + "." + String(ptr->_tw) + "." + String(ptr->_tw_v) ;
+  aramoire_segemnts   * ptr;
+  aramoire_segemnt  * setSeg  = &_outputArray[pos]._armoire;
+  uint8_t maxSeg = 0 ;
+  object = root.createNestedObject("etage");
+  setSeg->get_segmentCnt(maxSeg);          
+  for (int i = 0; i < maxSeg; ++i) {
+    ptr = setSeg->get_segment(i);
+    object[String(i)] = String(ptr->_c1.r) + "." + String(ptr->_c1.g) + "." + String(ptr->_c1.b) ;
+    object["hsv_"+String(i)] = String(ptr->_hsv_h) + "." + String(ptr->_hsv_s) + "." + String(ptr->_hsv_v) ;
+    object["tw_"+String(i)] = String(ptr->_isTw) + "." + String(ptr->_tw) + "." + String(ptr->_tw_v) ;
+  }  
 
-      // object[s1] = ptr->_isTw ;
-      // object[s2] = ptr->_tw ;
-      // object[s3] = ptr->_tw_v ;
-
-    }  
-
-  // fsprintf("\n");
-  // serializeJson(json, Serial);
-  // fsprintf("\n");
-  // 
   serializeJson(json, file);
 
   file.close();   
@@ -990,6 +1423,7 @@ void Device::output_toSpiff(uint8_t pos, const String & path){
   delete _LH_file;
 }
 
+
 /**
  * @brief      modue de sauvegarde ver la memoire spiff
  * @see       https://github.com/AdriLighting/
@@ -1002,19 +1436,9 @@ void Device::outputs_sav(){
   if ((millis() - _timerOutPutsSav) < 1000) // chien de garde
     return;
 
-  // LOG(-1,2,2,"SAV OUTPUT", "");    
+  ALT_TRACEC("main", "-\n"); 
 
-  JsonArray outputs = OutputSav[FPSTR(ALMLPT_OUTPUTS)];
-  uint8_t pos = outputs.size();
-  for (uint8_t i = 0; i < pos; i++) {
-    uint8_t s = outputs[i].as<uint8_t>();
-    output_toSpiff(s, "/outputs/lamp.txt");
-    armoiretofs(s);
-    delay(2);    
-  }
-
-  OutputSav.clear();
-  OutputSav.garbageCollect();
+  _DeviceSave.sav();
 
   _timerOutPutsSav = millis();
 }
@@ -1037,7 +1461,7 @@ void Device::outputs_savForce(){
   for (uint8_t i = 0; i < _output_count; i++) {
     output_toSpiff(i);
     armoiretofs(i);
-    delay(2);
+    delay(0);
   }
   _timerOutPutsSav = millis();
 }
@@ -1096,7 +1520,7 @@ void Device::preset_load(DynamicJsonDocument & doc) {
   String pathStr = "/presets/";
   pathStr.concat(name);
 
-  if(!FILESYSTEM.exists(pathStr)) return;
+  if(!FILESYSTEM.exists(pathStr)) {ALT_TRACEC("main", "[preset_load file not load][pathStr: %s]\n", pathStr.c_str()); return;}
 
   ALT_TRACEC("main", "[preset_load][pathStr: %s]\n", pathStr.c_str());
 
@@ -1150,16 +1574,15 @@ void Device::restart_requiered() {
 }
 void Device::format(uint8_t mod){
 
-  _TaskScheduler->get_task(_output_count+1)->set_enabled(false);  
-  _TaskScheduler->get_task(_output_count+2)->set_enabled(false);  
-  _TaskScheduler->get_task(_output_count+3)->set_enabled(false);  
   #ifdef ADS_PIN_IR
-  _TaskScheduler->get_task(_output_count+4)->set_enabled(false);    
+  _alml_taskSheduler.get_taskByName(TASKNAME_IR)->set_enabled(false);    
   #endif
+  _alml_taskSheduler.get_taskByName(TASKNAME_UDP)->set_enabled(false);  
+  _alml_taskSheduler.get_taskByName(TASKNAME_PROGRAM)->set_enabled(false);  
+  _alml_taskSheduler.get_taskByName(TASKNAME_WIFI)->set_enabled(false);  
+  _alml_taskSheduler.get_taskByName(TASKNAME_SERIAL)->set_enabled(false);  
+  _alml_taskSheduler.set_enabled_byTaskName(TASKNAME_OUTPUT, false);  
 
-  for (uint8_t i = 0; i < _output_count; i++) {
-    _TaskScheduler->get_task(i)->set_enabled(false);   
-  }
 
   Serial.printf_P(PSTR("FORMAT BEGIN\n"));
   

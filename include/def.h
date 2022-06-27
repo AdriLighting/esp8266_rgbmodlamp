@@ -8,5 +8,7 @@
   static const char ALML_DEBUGREGION_WEBSERVER  [] PROGMEM = "alml webserver";
   static const char ALML_DEBUGREGION_EFFECT     [] PROGMEM = "alml effect";
 
-
+  #define TFT_CS    D2     // TFT CS  pin is connected to NodeMCU pin D2
+  #define TFT_RST   D3     // TFT RST pin is connected to NodeMCU pin D3
+  #define TFT_DC    D4     // TFT DC  pin is connected to NodeMCU pin D4
 #endif // DEF_H

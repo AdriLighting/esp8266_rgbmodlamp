@@ -27,9 +27,22 @@ Effectslist::Effectslist(){
 
   uint8_t cnt = 0;
 
+  uint8_t excluedStart = 0;
+  String  excluedItem = "";
+
   for(int i = 0; i < _effeNamIDList_cnt; ++i) {
     String item = al_tools::ch_toString(_effeNamIDList[i]._nameId);
 
+    excluedItem = "";
+    excluedStart = 0;
+    JsonArray excluedArr  = DeviceUserConfig[F("list_lb_exclued")].as<JsonArray>();
+    uint8_t   excluedSize = excluedArr.size();
+    for(uint8_t i = 0; i < excluedSize; ++i) {
+      excluedItem = excluedArr[i].as<String>();
+      if(excluedItem != "" && item.indexOf(excluedItem) > -1)  excluedStart++;
+    }
+    if (excluedStart>0)continue;
+    // if(excluedItem != "" && item.indexOf(excluedItem) > -1)  continue;
     // if(item.indexOf("Syncro") > -1)  continue;
     // if(item.indexOf("Rainbow") < 0)  continue;
 
@@ -39,9 +52,21 @@ Effectslist::Effectslist(){
   _listId  				= new uint8_t[cnt+1]; 
   uint8_t pos = 0;
 
+
   for(int i = 0; i < _effeNamIDList_cnt; ++i) {
     String item = al_tools::ch_toString(_effeNamIDList[i]._nameId);
 
+    excluedItem = "";
+    excluedStart = 0;
+    JsonArray excluedArr  = DeviceUserConfig[F("list_lb_exclued")].as<JsonArray>();
+    uint8_t   excluedSize = excluedArr.size();
+    for(uint8_t i = 0; i < excluedSize; ++i) {
+      excluedItem = excluedArr[i].as<String>();
+      if(excluedItem != "" && item.indexOf(excluedItem) > -1)  excluedStart++;
+    }
+    if (excluedStart>0)continue;
+    // if(excluedItem != "" && item.indexOf(excluedItem) > -1)  continue;
+    // if(item.indexOf("Armoire") > -1)  continue;
     // if(item.indexOf("Syncro") > -1)  continue;
     // if(item.indexOf("Rainbow") < 0)  continue;
 
@@ -65,11 +90,13 @@ Effectslist::Effectslist(){
   _Program->set_callback(_Program_cb);
   _Program->initialize_lb(0, "full", cnt , _AP_DEFAULTLIST);
   _Program->initialize( cnt, _AP_DEFAULTLIST, _listId, "full", apListSortType_t::ST_AB);
-  _Program->print();
-  uint8_t plC       = 2;
-  uint8_t iC[]      = {20,      20};  // nb items max
-  const char * Ln[] = {"full",  "full"};
+  // _Program->print();
+
+  uint8_t plC       = 1;
+  uint8_t iC[]      = {1};  // nb items max
+  const char * Ln[] = {"full"};
   _Program->initialize_playlist(plC, iC, Ln);
+
 /*
   for(int i = 0; i < _effeNamIDList_cnt; ++i) {
     String name = FPSTR(_effeNamIDList[i]._nameId);
@@ -86,7 +113,7 @@ Effectslist::Effectslist(){
   }  
 */
   _Program->remote_action(apSetter_t::APSET_PLAY_LB);
-  _Program->remote_action(apSetter_t::APSET_PLAY_DELAY, "15");
+  _Program->remote_action(apSetter_t::APSET_PLAY_DELAY, "60");
   _Program->remote_action(apSetter_t::APSET_PLAY_STOP);
   _Program->remote_action(apSetter_t::APSET_ITEMID, "0");
 

@@ -11,6 +11,9 @@
   } RemoteControlIrMod_t;
 
 	class RemoteControl_ir  {
+		typedef std::function<void(const String & v1)> callback_function_t;
+
+
 		IRrecv* irrecv;
 		//change pin in NpbWrapper.h
 
@@ -37,16 +40,18 @@
 		void applyRepeatActions();
 
 	public:
-		RemoteControl_ir(){_EffectslistPtr = EffectslistPtrGet();};
-		RemoteControl_ir(int8_t pin){irPin = pin;_EffectslistPtr = EffectslistPtrGet();};
+		RemoteControl_ir(){/*_EffectslistPtr = EffectslistPtrGet();*/};
+		RemoteControl_ir(int8_t pin){irPin = pin;/*_EffectslistPtr = EffectslistPtrGet();*/};
 		RemoteControl_ir(int8_t pin, RemoteControlIrMod_t mod){
 			irPin = pin;
 			_irMod = mod;
-			_EffectslistPtr = EffectslistPtrGet();};
+			// _EffectslistPtr = EffectslistPtrGet();
+		};
 		~RemoteControl_ir(){};
 
-		Effectslist * _EffectslistPtr;
-
+		// Effectslist * _EffectslistPtr;
+		callback_function_t _cb_udpSend = nullptr;
+		void set_cb_udpSend(callback_function_t f) { _cb_udpSend = std::move(f); };
 
 		RemoteControlIrMod_t get_mod() {return _irMod;}
 
@@ -62,32 +67,36 @@
 		~RemoteControl_udp(){};
 		virtual void send_appi(boolean eff, boolean prog, boolean reset = false, uint8_t effLoad = false);
 		virtual void send_toIp(const String & transmit_buffer, IPAddress ip, uint16_t port);
+		virtual void handleJson(DynamicJsonDocument & doc, boolean udpMulti = true);
+		virtual void handleJson(uint8_t op);
 
 	protected:
 		virtual void handle();
 		virtual void begin();
 		
 	private:
-		void handleJson(uint8_t op);
-		void handleJson(DynamicJsonDocument & doc, boolean udpMulti = true);
 	};
 	// #ifdef ADS_PIN_IR
 	// class RemoteControl : public  Effectslist, public RemoteControl_ir, public RemoteControl_udp {	
 	// #else
+	
+
 	class RemoteControl : public  Effectslist, public RemoteControl_udp {
-	// #endif
 		RemoteControl_ir * _Ir_intern = nullptr;
 		RemoteControl_ir * _Ir_TFT 		= nullptr;
 	public:
 		RemoteControl();
 		~RemoteControl(){};
-		#ifdef ADS_PIN_IR
 		void handle_ir();	
-		#endif
-		void irSend(RemoteControl_ir * ptr, DynamicJsonDocument & doc);
+		// void irSend(RemoteControl_ir * ptr, DynamicJsonDocument & doc);
 		void handle_udp();
 		void begin();
-	};
+	};	
+
+
+
 	RemoteControl * RemoteControlPtrGet();	
 
+	void keyboard_print()	;
+	void keyboard_getter(const String & v1) ;
 #endif // REMOTE_H

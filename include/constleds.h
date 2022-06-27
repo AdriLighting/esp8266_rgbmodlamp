@@ -5,24 +5,24 @@
 #include <FastLED.h>
 #include "defleds.h"
 
-static const uint8_t T_EFFVER[] PROGMEM = {
-  3, 4, 6, 4, 4, 5, 3, 3, 7, 5, 5, 6, 5, 9, 5, 8, // 0-15
-  5, 5, 3, 7, 3, 7, 5, 5, 7, 3, 3, 7, 7, 5, 1, 5, // 16-31
-  5, 5, 5, 3, 7, 3, 4, 3, 3, 9, 4, 5, 7, 7, 3, 3, // 32 - 47
-  5, 6, 6, 6, 4, 7, 5, 4, 5, 5, 6, 9, 5, 5, 7, 6, // 48 - 63
-  5, 1, 1, 5, 4, 1, 7, 5, 3, 1, 1, 1, 0, 0, 0, 0, // 64 - 79
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 80 - 95
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 96 - 111
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 112 - 127
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 128 - 143
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 144 - 159
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 160 - 175
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 176 - 191
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 192 - 207
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 208 - 223
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 224 - 239
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 4, 6, // 240 - 255
-};
+// static const uint8_t T_EFFVER[] PROGMEM = {
+//   3, 4, 6, 4, 4, 5, 3, 3, 7, 5, 5, 6, 5, 9, 5, 8, // 0-15
+//   5, 5, 3, 7, 3, 7, 5, 5, 7, 3, 3, 7, 7, 5, 1, 5, // 16-31
+//   5, 5, 5, 3, 7, 3, 4, 3, 3, 9, 4, 5, 7, 7, 3, 3, // 32 - 47
+//   5, 6, 6, 6, 4, 7, 5, 4, 5, 5, 6, 9, 5, 5, 7, 6, // 48 - 63
+//   5, 1, 1, 5, 4, 1, 7, 5, 3, 1, 1, 1, 0, 0, 0, 0, // 64 - 79
+//   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 80 - 95
+//   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 96 - 111
+//   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 112 - 127
+//   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 128 - 143
+//   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 144 - 159
+//   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 160 - 175
+//   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 176 - 191
+//   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 192 - 207
+//   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 208 - 223
+//   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 224 - 239
+//   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 4, 6, // 240 - 255
+// };
 
 // #define COTNROLS_PREFIX "\"nb\":@nb@,\"name\":\"@name@\",\"ver\":@ver@,\"flags\":"
 // static const char E_DEFUI[]     PROGMEM = "{" COTNROLS_PREFIX SF(SET_ALL_EFFFLAGS) ",\"ctrls\":[]}";
@@ -30,77 +30,73 @@ static const uint8_t T_EFFVER[] PROGMEM = {
 #define COTNROLS_PREFIX "\"nb\":@nb@,\"name\":\"@name@\""
 static const char E_DEFUI[]     PROGMEM = "{" COTNROLS_PREFIX ",\"ctrls\":[]}";
 
-static const char TEFF_getName  [] PROGMEM = "Name";
-static const char TEFF_getId    [] PROGMEM = "Id";
-static const char TEFF_getVal   [] PROGMEM = "Val";
-static const char TEFF_s_mi     [] PROGMEM = "Min";
-static const char TEFF_s_ma     [] PROGMEM = "Max";
-static const char TEFF_s_st     [] PROGMEM = "Step";
-static const char TEFF_getType  [] PROGMEM = "Type";
 
 
-static const char TINTF_084[] PROGMEM = DFTINTF_084;
-static const char TINTF_020[] PROGMEM = DFTINTF_020;
-static const char TINTF_007[] PROGMEM = "Refresh effects-list";
-static const char TINTF_008[] PROGMEM = "Save";
-static const char TINTF_00D[] PROGMEM = "Luminosité";
-static const char TINTF_087[] PROGMEM = "Vitesse";
-static const char TINTF_088[] PROGMEM = DFTINTF_088;
+
+static const char ALMLPT_LEDS_001[] PROGMEM = DFTINTF_084;//Palette
+static const char ALMLPT_LEDS_002[] PROGMEM = DFTINTF_020;//Microphone
+static const char ALMLPT_LEDS_003[] PROGMEM = "Refresh effects-list";
+static const char ALMLPT_LEDS_004[] PROGMEM = "Save";
+static const char ALMLPT_LEDS_005[] PROGMEM = "Luminosité";
+static const char ALMLPT_LEDS_006[] PROGMEM = "Vitesse";
+static const char ALMLPT_LEDS_007[] PROGMEM = DFTINTF_088; //Echelle
+static const char ALMLPT_LEDS_008[] PROGMEM = "Hue"; //
+static const char ALMLPT_LEDS_009[] PROGMEM = "Couleur statique"; //
 
 
-static const char TCONST_0012[] PROGMEM = "bright";
-static const char TCONST_0013[] PROGMEM = "Vitess";
-static const char TCONST_0014[] PROGMEM = "scale";
+// static const char TCONST_0012[] PROGMEM = "bright";
+// static const char TCONST_0013[] PROGMEM = "Vitess";
+// static const char TCONST_0014[] PROGMEM = "scale";
 
-static const char PGidxtemplate[] PROGMEM  = "%s{\"n\":%d,\"f\":%d}";
+// static const char PGidxtemplate[] PROGMEM  = "%s{\"n\":%d,\"f\":%d}";
 
-static const char TEFF_000[] PROGMEM = "";  // "пустышка"
+// static const char TEFF_000[] PROGMEM = "";  // "пустышка"
 
-static const char TEFF_Pride                            [] PROGMEM = "Pride";
-static const char TEFF_PrideSyncro                      [] PROGMEM = "Pride Syncro";
-static const char TEFF_ColorWave                        [] PROGMEM = "ColorWave";
-static const char TEFF_ColorWaveSyncro                  [] PROGMEM = "ColorWave Syncro";
-static const char TEFF_RainbowCycle                     [] PROGMEM = "Rainbow cycle";
-static const char TEFF_RainbowCycleSyncro               [] PROGMEM = "Rainbow cycle Syncro";
-static const char TEFF_Rainbow                          [] PROGMEM = "Rainbow";
-static const char TEFF_RainbowSyncro                    [] PROGMEM = "Rainbow Syncro";
-static const char TEFF_ColorWipe                        [] PROGMEM = "ColorWipe";
-static const char TEFF_ColorWipeSyncro                  [] PROGMEM = "ColorWipe Syncro";
-static const char TEFF_ColorWipeInverse                 [] PROGMEM = "ColorWipe inverse";
-static const char TEFF_ColorWipeInverseSyncro           [] PROGMEM = "ColorWipe inverse Syncro";
-static const char TEFF_ColorWipeReverseinverse          [] PROGMEM = "ColorWipe reverse inverse";
-static const char TEFF_ColorWipeReverseinverseSyncro    [] PROGMEM = "ColorWipe reverse inverse Syncro";
-static const char TEFF_ColorWipeRandom                  [] PROGMEM = "ColorWipe random";
-static const char TEFF_ColorWipeRandomSyncro            [] PROGMEM = "ColorWipe random Syncro";
-static const char TEFF_TricolorChase                    [] PROGMEM = "Tricolor Chase";
-static const char TEFF_TricolorChasesyncro              [] PROGMEM = "Tricolor Chase Syncro";
-static const char TEFF_Breath                           [] PROGMEM = "Breath";
-static const char TEFF_BreathSyncro                     [] PROGMEM = "Breath Syncro";
-static const char TEFF_Colortwinkle                     [] PROGMEM = "Colortwinkle";
-static const char TEFF_Commets                          [] PROGMEM = "Commets";
-static const char TEFF_Commet                           [] PROGMEM = "Commet";
-static const char TEFF_Bounce                           [] PROGMEM = "Bounce";
-static const char TEFF_Ruggle                           [] PROGMEM = "Ruggle";
-static const char TEFF_RainbowWave                      [] PROGMEM = "Rainbow Wave";
+static const char ALMLPT_EFF_Pride                            [] PROGMEM = "Pride";
+static const char ALMLPT_EFF_PrideSyncro                      [] PROGMEM = "Pride Syncro";
+static const char ALMLPT_EFF_ColorWave                        [] PROGMEM = "ColorWave";
+static const char ALMLPT_EFF_ColorWaveSyncro                  [] PROGMEM = "ColorWave Syncro";
+static const char ALMLPT_EFF_RainbowCycle                     [] PROGMEM = "Rainbow cycle";
+static const char ALMLPT_EFF_RainbowCycleSyncro               [] PROGMEM = "Rainbow cycle Syncro";
+static const char ALMLPT_EFF_Rainbow                          [] PROGMEM = "Rainbow";
+static const char ALMLPT_EFF_RainbowSyncro                    [] PROGMEM = "Rainbow Syncro";
+static const char ALMLPT_EFF_ColorWipe                        [] PROGMEM = "ColorWipe";
+static const char ALMLPT_EFF_ColorWipeSyncro                  [] PROGMEM = "ColorWipe Syncro";
+static const char ALMLPT_EFF_ColorWipeInverse                 [] PROGMEM = "ColorWipe inverse";
+static const char ALMLPT_EFF_ColorWipeInverseSyncro           [] PROGMEM = "ColorWipe inverse Syncro";
+static const char ALMLPT_EFF_ColorWipeReverseinverse          [] PROGMEM = "ColorWipe reverse inverse";
+static const char ALMLPT_EFF_ColorWipeReverseinverseSyncro    [] PROGMEM = "ColorWipe reverse inverse Syncro";
+static const char ALMLPT_EFF_ColorWipeRandom                  [] PROGMEM = "ColorWipe random";
+static const char ALMLPT_EFF_ColorWipeRandomSyncro            [] PROGMEM = "ColorWipe random Syncro";
+static const char ALMLPT_EFF_TricolorChase                    [] PROGMEM = "Tricolor Chase";
+static const char ALMLPT_EFF_TricolorChasesyncro              [] PROGMEM = "Tricolor Chase Syncro";
+static const char ALMLPT_EFF_Breath                           [] PROGMEM = "Breath";
+static const char ALMLPT_EFF_BreathSyncro                     [] PROGMEM = "Breath Syncro";
+static const char ALMLPT_EFF_Colortwinkle                     [] PROGMEM = "Colortwinkle";
+static const char ALMLPT_EFF_Commets                          [] PROGMEM = "Commets";
+static const char ALMLPT_EFF_Commet                           [] PROGMEM = "Commet";
+static const char ALMLPT_EFF_Bounce                           [] PROGMEM = "Bounce";
+static const char ALMLPT_EFF_Ruggle                           [] PROGMEM = "Ruggle";
+static const char ALMLPT_EFF_RainbowWave                      [] PROGMEM = "Rainbow Wave";
 
 
-static const char TEFF_ChaseBlackoutrainbow             [] PROGMEM = "Chase blackout rainbow";
-static const char TEFF_TheaterChaserainbow              [] PROGMEM = "Theater chase rainbow";
-static const char TEFF_ChaseBlackout                    [] PROGMEM = "Chase blackout";
-static const char TEFF_ColorSweeprandom                 [] PROGMEM = "Color sweep random";
-static const char TEFF_LarsonScanner                    [] PROGMEM = "Larson scanner";
-static const char TEFF_Glow                             [] PROGMEM = "Glow";
-static const char TEFF_Pulse                            [] PROGMEM = "Pulse";
-static const char TEFF_SineWave                         [] PROGMEM = "SineWave";
-static const char TEFF_TriWave                          [] PROGMEM = "TriWave";
-static const char TEFF_Wave                             [] PROGMEM = "Wave";
-static const char TEFF_ColorPalette                     [] PROGMEM = "ColorPalette";
-static const char TEFF_ColorPaletteSyncro               [] PROGMEM = "ColorPalette syncro";
-static const char TEFF_Twinklefox                       [] PROGMEM = "Twinklefox";
-static const char TEFF_ArmoireStatiquehue               [] PROGMEM = "Armoire statique hue";
-static const char TEFF_ArmoireStatiquernd               [] PROGMEM = "Armoire statique rnd";
-static const char TEFF_ArmoireCyclehue                  [] PROGMEM = "Armoire cycle hue";
-static const char TEFF_ArmoireOutsideToInside           [] PROGMEM = "ArmoireOutsideToInside";
+static const char ALMLPT_EFF_ChaseBlackoutrainbow             [] PROGMEM = "Chase blackout rainbow";
+static const char ALMLPT_EFF_TheaterChaserainbow              [] PROGMEM = "Theater chase rainbow";
+static const char ALMLPT_EFF_ChaseBlackout                    [] PROGMEM = "Chase blackout";
+static const char ALMLPT_EFF_ColorSweeprandom                 [] PROGMEM = "Color sweep random";
+static const char ALMLPT_EFF_LarsonScanner                    [] PROGMEM = "Larson scanner";
+static const char ALMLPT_EFF_Glow                             [] PROGMEM = "Glow";
+static const char ALMLPT_EFF_Pulse                            [] PROGMEM = "Pulse";
+static const char ALMLPT_EFF_SineWave                         [] PROGMEM = "SineWave";
+static const char ALMLPT_EFF_TriWave                          [] PROGMEM = "TriWave";
+static const char ALMLPT_EFF_Wave                             [] PROGMEM = "Wave";
+static const char ALMLPT_EFF_ColorPalette                     [] PROGMEM = "ColorPalette";
+static const char ALMLPT_EFF_ColorPaletteSyncro               [] PROGMEM = "ColorPalette syncro";
+static const char ALMLPT_EFF_Twinklefox                       [] PROGMEM = "Twinklefox";
+static const char ALMLPT_EFF_ArmoireStatiquehue               [] PROGMEM = "Armoire statique hue";
+static const char ALMLPT_EFF_ArmoireStatiquernd               [] PROGMEM = "Armoire statique rnd";
+static const char ALMLPT_EFF_ArmoireCyclehue                  [] PROGMEM = "Armoire cycle hue";
+static const char ALMLPT_EFF_ArmoireOutsideToInside           [] PROGMEM = "ArmoireOutsideToInside";
 
 /*
 0   bri
@@ -243,38 +239,38 @@ static const char E_FX_Armoire_1 []  PROGMEM =
   "]}";
 
 // static const char* const T_EFFUICFG[] PROGMEM = {
-// /*  0   - TEFF_Pride                          - EffectFx_mode_pride                 - OET_NONE      - 0 - 1 */ E_DEFUI,
-// /*  1   - TEFF_PrideSyncro                    - EffectFx_mode_pride                 - OET_NONE      - 0 - 1 */ E_DEFUI,
-// /*  10  - TEFF_ColorWave                      - EffectFx_mode_colorwaves            - OET_PALGRAD   - 0 - 1 */ E_DEFUI,
-// /*  11  - TEFF_ColorWaveSyncro                - EffectFx_mode_colorwaves            - OET_PALGRAD   - 0 - 1 */ E_DEFUI,          
-// /*  12  - TEFF_RainbowCycle                   - EffectFx_mode_rainbow_cycle         - OET_NONE      - 0 - 1 */ E_FX_RainbowCycle,
-// /*  13  - TEFF_RainbowCycleSyncro             - EffectFx_mode_rainbow_cycle         - OET_NONE      - 0 - 1 */ E_FX_RainbowCycle,
-// /*  14  - TEFF_Rainbow                        - EffectFx_mode_rainbow               - OET_NONE      - 1 - 1 */ E_FX_Rainbow,
-// /*  15  - TEFF_RainbowSyncro                  - EffectFx_mode_rainbow               - OET_NONE      - 1 - 1 */ E_FX_Rainbow,
-// /*  2   - TEFF_ColorWipe                      - EffectFx_mode_color_wipe            - OET_HUETIMER  - 0 - 1 */ E_FX_ColorWipe,
-// /*  3   - TEFF_ColorWipeSyncro                - EffectFx_mode_color_wipe            - OET_HUETIMER  - 0 - 1 */ E_FX_ColorWipe,
-// /*  4   - TEFF_ColorWipeInverse               - EffectFx_mode_color_wipe_inv        - OET_HUETIMER  - 0 - 1 */ E_FX_ColorWipe,        
-// /*  5   - TEFF_ColorWipeInverseSyncro         - EffectFx_mode_color_wipe_inv        - OET_HUETIMER  - 0 - 1 */ E_FX_ColorWipe,        
-// /*  6   - TEFF_ColorWipeReverseinverse        - EffectFx_mode_color_wipe_rev_inv    - OET_HUETIMER  - 0 - 1 */ E_FX_ColorWipe,              
-// /*  7   - TEFF_ColorWipeReverseinverseSyncro  - EffectFx_mode_color_wipe_rev_inv    - OET_HUETIMER  - 0 - 1 */ E_FX_ColorWipe,              
-// /*  8   - TEFF_ColorWipeRandom                - EffectFx_mode_color_wipe_random     - OET_NONE      - 0 - 1 */ E_FX_ColorWipe,    
-// /*  9   - TEFF_ColorWipeRandomSyncro          - EffectFx_mode_color_wipe_random     - OET_NONE      - 0 - 1 */ E_FX_ColorWipe, 
-// /*  19  - TEFF_TricolorChase                  - EffectFx_mode_tricolor_chase        - OET_HTPG      - 1 - 1 */ E_FX_TricolorChase,
-// /*  20  - TEFF_TricolorChasesyncro            - EffectFx_mode_tricolor_chase        - OET_HTPG      - 1 - 1 */ E_FX_TricolorChase,
-// /*  17  - TEFF_Breath                         - EffectFx_mode_breath                - OET_HUETIMER  - 0 - 1 */ E_FX_Breath,
-// /*  18  - TEFF_BreathSyncro                   - EffectFx_mode_breath                - OET_HUETIMER  - 0 - 1 */ E_FX_Breath,
-// /*  16  - TEFF_Colortwinkle                   - EffectFx_mode_colortwinkle          - OET_NONE      - 0 - 1 */ E_FX_Colortwinkle,  
-// /*      - TEFF_Commets                        - EffectFx_comets                     - OET_HUETIMER  - 0 - 2 */ E_FX_Move,        
-// /*      - TEFF_Commet                         - EffectFx_Comet                      - OET_HUETIMER  - 0 - 2 */ E_FX_Move,  
-// /*      - TEFF_Bounce                         - EffectFx_bounce                     - OET_HUETIMER  - 0 - 2 */ E_FX_Move,    
-// /*      - TEFF_Ruggle                         - EffectFx_ruggle                     - OET_HUETIMER  - 0 - 2 */ E_FX_Move,  
-// /*      - TEFF_RainbowWave                    - EffectFx_rainbowWave                - OET_HUETIMER  - 0 - 2 */ E_DEFUI
+// /*  0   - ALMLPT_EFF_Pride                          - EffectFx_mode_pride                 - OET_NONE      - 0 - 1 */ E_DEFUI,
+// /*  1   - ALMLPT_EFF_PrideSyncro                    - EffectFx_mode_pride                 - OET_NONE      - 0 - 1 */ E_DEFUI,
+// /*  10  - ALMLPT_EFF_ColorWave                      - EffectFx_mode_colorwaves            - OET_PALGRAD   - 0 - 1 */ E_DEFUI,
+// /*  11  - ALMLPT_EFF_ColorWaveSyncro                - EffectFx_mode_colorwaves            - OET_PALGRAD   - 0 - 1 */ E_DEFUI,          
+// /*  12  - ALMLPT_EFF_RainbowCycle                   - EffectFx_mode_rainbow_cycle         - OET_NONE      - 0 - 1 */ E_FX_RainbowCycle,
+// /*  13  - ALMLPT_EFF_RainbowCycleSyncro             - EffectFx_mode_rainbow_cycle         - OET_NONE      - 0 - 1 */ E_FX_RainbowCycle,
+// /*  14  - ALMLPT_EFF_Rainbow                        - EffectFx_mode_rainbow               - OET_NONE      - 1 - 1 */ E_FX_Rainbow,
+// /*  15  - ALMLPT_EFF_RainbowSyncro                  - EffectFx_mode_rainbow               - OET_NONE      - 1 - 1 */ E_FX_Rainbow,
+// /*  2   - ALMLPT_EFF_ColorWipe                      - EffectFx_mode_color_wipe            - OET_HUETIMER  - 0 - 1 */ E_FX_ColorWipe,
+// /*  3   - ALMLPT_EFF_ColorWipeSyncro                - EffectFx_mode_color_wipe            - OET_HUETIMER  - 0 - 1 */ E_FX_ColorWipe,
+// /*  4   - ALMLPT_EFF_ColorWipeInverse               - EffectFx_mode_color_wipe_inv        - OET_HUETIMER  - 0 - 1 */ E_FX_ColorWipe,        
+// /*  5   - ALMLPT_EFF_ColorWipeInverseSyncro         - EffectFx_mode_color_wipe_inv        - OET_HUETIMER  - 0 - 1 */ E_FX_ColorWipe,        
+// /*  6   - ALMLPT_EFF_ColorWipeReverseinverse        - EffectFx_mode_color_wipe_rev_inv    - OET_HUETIMER  - 0 - 1 */ E_FX_ColorWipe,              
+// /*  7   - ALMLPT_EFF_ColorWipeReverseinverseSyncro  - EffectFx_mode_color_wipe_rev_inv    - OET_HUETIMER  - 0 - 1 */ E_FX_ColorWipe,              
+// /*  8   - ALMLPT_EFF_ColorWipeRandom                - EffectFx_mode_color_wipe_random     - OET_NONE      - 0 - 1 */ E_FX_ColorWipe,    
+// /*  9   - ALMLPT_EFF_ColorWipeRandomSyncro          - EffectFx_mode_color_wipe_random     - OET_NONE      - 0 - 1 */ E_FX_ColorWipe, 
+// /*  19  - ALMLPT_EFF_TricolorChase                  - EffectFx_mode_tricolor_chase        - OET_HTPG      - 1 - 1 */ E_FX_TricolorChase,
+// /*  20  - ALMLPT_EFF_TricolorChasesyncro            - EffectFx_mode_tricolor_chase        - OET_HTPG      - 1 - 1 */ E_FX_TricolorChase,
+// /*  17  - ALMLPT_EFF_Breath                         - EffectFx_mode_breath                - OET_HUETIMER  - 0 - 1 */ E_FX_Breath,
+// /*  18  - ALMLPT_EFF_BreathSyncro                   - EffectFx_mode_breath                - OET_HUETIMER  - 0 - 1 */ E_FX_Breath,
+// /*  16  - ALMLPT_EFF_Colortwinkle                   - EffectFx_mode_colortwinkle          - OET_NONE      - 0 - 1 */ E_FX_Colortwinkle,  
+// /*      - ALMLPT_EFF_Commets                        - EffectFx_comets                     - OET_HUETIMER  - 0 - 2 */ E_FX_Move,        
+// /*      - ALMLPT_EFF_Commet                         - EffectFx_Comet                      - OET_HUETIMER  - 0 - 2 */ E_FX_Move,  
+// /*      - ALMLPT_EFF_Bounce                         - EffectFx_bounce                     - OET_HUETIMER  - 0 - 2 */ E_FX_Move,    
+// /*      - ALMLPT_EFF_Ruggle                         - EffectFx_ruggle                     - OET_HUETIMER  - 0 - 2 */ E_FX_Move,  
+// /*      - ALMLPT_EFF_RainbowWave                    - EffectFx_rainbowWave                - OET_HUETIMER  - 0 - 2 */ E_DEFUI
 // };
-typedef enum : uint8_t {
-  EFFID_CAT_NONE=0,  
-  EFFID_CAT_NEO,    
-  EFFID_CAT_COMM  
-} effeNamIDCat_t; 
+// typedef enum : uint8_t {
+//   EFFID_CAT_NONE=0,  
+//   EFFID_CAT_NEO,    
+//   EFFID_CAT_COMM  
+// } effeNamIDCat_t; 
 
 struct effeNamIDList {
   const char * _nameId;
@@ -285,32 +281,32 @@ struct effeNamIDList {
   int _spd;
 } ;
 // static const char* const T_EFFNAMEID[] PROGMEM = {
-// TEFF_Pride,
-// TEFF_PrideSyncro,
-// TEFF_ColorWave,
-// TEFF_ColorWaveSyncro,
-// TEFF_RainbowCycle,
-// TEFF_RainbowCycleSyncro,
-// TEFF_Rainbow,
-// TEFF_RainbowSyncro,
-// TEFF_ColorWipe,
-// TEFF_ColorWipeSyncro,
-// TEFF_ColorWipeInverse,
-// TEFF_ColorWipeInverseSyncro,
-// TEFF_ColorWipeReverseinverse,
-// TEFF_ColorWipeReverseinverseSyncro,
-// TEFF_ColorWipeRandom,
-// TEFF_ColorWipeRandomSyncro,
-// TEFF_TricolorChase,
-// TEFF_TricolorChasesyncro,
-// TEFF_Breath,
-// TEFF_BreathSyncro,
-// TEFF_Colortwinkle,
-// TEFF_Commets,
-// TEFF_Commet,
-// TEFF_Bounce,
-// TEFF_Ruggle,
-// TEFF_RainbowWave
+// ALMLPT_EFF_Pride,
+// ALMLPT_EFF_PrideSyncro,
+// ALMLPT_EFF_ColorWave,
+// ALMLPT_EFF_ColorWaveSyncro,
+// ALMLPT_EFF_RainbowCycle,
+// ALMLPT_EFF_RainbowCycleSyncro,
+// ALMLPT_EFF_Rainbow,
+// ALMLPT_EFF_RainbowSyncro,
+// ALMLPT_EFF_ColorWipe,
+// ALMLPT_EFF_ColorWipeSyncro,
+// ALMLPT_EFF_ColorWipeInverse,
+// ALMLPT_EFF_ColorWipeInverseSyncro,
+// ALMLPT_EFF_ColorWipeReverseinverse,
+// ALMLPT_EFF_ColorWipeReverseinverseSyncro,
+// ALMLPT_EFF_ColorWipeRandom,
+// ALMLPT_EFF_ColorWipeRandomSyncro,
+// ALMLPT_EFF_TricolorChase,
+// ALMLPT_EFF_TricolorChasesyncro,
+// ALMLPT_EFF_Breath,
+// ALMLPT_EFF_BreathSyncro,
+// ALMLPT_EFF_Colortwinkle,
+// ALMLPT_EFF_Commets,
+// ALMLPT_EFF_Commet,
+// ALMLPT_EFF_Bounce,
+// ALMLPT_EFF_Ruggle,
+// ALMLPT_EFF_RainbowWave
 // };
 extern PROGMEM effeNamIDList _effeNamIDList [] ;
 extern uint8_t _effeNamIDList_cnt ;

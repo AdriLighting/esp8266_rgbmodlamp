@@ -84,28 +84,32 @@ void LAMP::effectsLoop_pal_reset(uint8_t p){
   _timer_effectsLoopPal = millis();
 }
 
-void LAMP::effectsLoop_TimerHue(const String & cmd, const JsonObject & value){
-  if ((cmd != FPSTR(req_eff_timerCol))) return;
+boolean LAMP::effectsLoop_TimerHue(const String & cmd, const JsonObject & value){
+  if ((cmd != FPSTR(req_eff_timerCol))) return false;
   uint32_t v = value[FPSTR(ALMLPT_V)].as<uint32_t>();
-  _effectsLoop_timerMax = v;  
+  _effectsLoop_timerMax = v;
+  return true;  
 }
 void LAMP::effectsLoop_TimerHue(uint32_t value){
   _effectsLoop_timerMax = value;
 }
-void LAMP::effectsLoop_TimerPal(const String & cmd, const JsonObject & value){
-  if ((cmd != FPSTR(req_eff_timerPal))) return;
+boolean LAMP::effectsLoop_TimerPal(const String & cmd, const JsonObject & value){
+  if ((cmd != FPSTR(req_eff_timerPal))) return false;
   uint16_t v = value[FPSTR(ALMLPT_V)].as<uint16_t>();
   _effectsLoop_timerPalMax = v;  
+  return true;
 }
-void LAMP::effectsLoop_TimerPalGrad(const String & cmd, const JsonObject & value){
-  if ((cmd != FPSTR(req_eff_timerPalGrad))) return;
+boolean LAMP::effectsLoop_TimerPalGrad(const String & cmd, const JsonObject & value){
+  if ((cmd != FPSTR(req_eff_timerPalGrad))) return false;
   uint16_t v = value[FPSTR(ALMLPT_V)].as<uint16_t>();
   _effectsLoop_timerPalGradMax = v;  
+  return true;
 }
-void LAMP::effectsLoop_Timer(const String & cmd, const JsonObject & value){
-  effectsLoop_TimerHue(cmd, value);
-  effectsLoop_TimerPal(cmd, value);
-  effectsLoop_TimerPalGrad(cmd, value);
+boolean LAMP::effectsLoop_Timer(const String & cmd, const JsonObject & value){
+  if (effectsLoop_TimerHue(cmd, value))     return true;
+  if (effectsLoop_TimerPal(cmd, value))     return true;
+  if (effectsLoop_TimerPalGrad(cmd, value)) return true;
+  return false;
 }
 
 
@@ -182,6 +186,7 @@ void LAMP::effect_setbri(uint8_t stripPos, uint8_t value) {
   #endif
   _hsvLoop_1.hueChangeSet(state);
 }
+
 void LAMP::effect_setscale(uint8_t stripPos, uint8_t value) {
   uint8_t min = _effects[stripPos]->getControls()[2]->getMin().toInt();
   uint8_t max = _effects[stripPos]->getControls()[2]->getMax().toInt();
@@ -214,6 +219,7 @@ void LAMP::effect_id(uint8_t stripPos, uint8_t id, uint8_t value) {
   //   _effects[stripPos]->getControls()[id]->print();  
   // #endif
 }
+
 
 
 void LAMP::frameShow(const uint32_t ticktime){

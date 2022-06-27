@@ -27,7 +27,7 @@ void UIControl::print(){
   }
   // ALT_TRACEC("main", "-\n");
   Serial.printf_P(PSTR("[%-5s: %-30s][%-5s: %-5d][%-5s: %-5s][%-5s: %-5s][%-5s: %-5s][%-5s: %-5s][%-5s: %-5s][%5d]\n"),
-    TEFF_getName, s_n.c_str(), TEFF_getId, s_i, TEFF_getVal, s_v.c_str(), TEFF_s_mi, s_mi.c_str(), TEFF_s_ma, s_ma.c_str(), TEFF_s_st, s_st.c_str(), TEFF_getType, s_ts.c_str(), s_t   );
+    ALMLPT_NAME, s_n.c_str(), ALMLPT_ID, s_i, ALMLPT_VAL, s_v.c_str(), ALMLPT_MI, s_mi.c_str(), ALMLPT_MA, s_ma.c_str(), ALMLPT_ST, s_st.c_str(), ALMLPT_GETTYPE, s_ts.c_str(), s_t   );
   // ALT_TRACEC("main", "--\n");
 
 } 
@@ -62,7 +62,7 @@ void _print(UIControl*_val, String value){
   }
   // ALT_TRACEC("main", "-\n");
   Serial.printf_P(PSTR("[%-5s: %-30s][%-5s: %-5d][%-5s: %-5s][%-5s: %-5s][%-5s: %-5s][%-5s: %-5s][%-5s: %-5s][%5d]\n"),
-    TEFF_getName, s_n.c_str(), TEFF_getId, s_i, TEFF_getVal, s_v.c_str(), TEFF_s_mi, s_mi.c_str(), TEFF_s_ma, s_ma.c_str(), TEFF_s_st, s_st.c_str(), TEFF_getType, s_ts.c_str(), s_t   );
+    ALMLPT_NAME, s_n.c_str(), ALMLPT_ID, s_i, ALMLPT_VAL, s_v.c_str(), ALMLPT_MI, s_mi.c_str(), ALMLPT_MA, s_ma.c_str(), ALMLPT_ST, s_st.c_str(), ALMLPT_GETTYPE, s_ts.c_str(), s_t   );
   // ALT_TRACEC("main", "--\n");
 
 } 
@@ -204,7 +204,7 @@ void EffectCalc::setDynCtrl(UIControl*_val, boolean & v1, String & v2){
 
   v2 = _val->getVal();
 
-  if (usepalettes && _val->getName().startsWith(FPSTR(TINTF_084))==1){ 
+  if (usepalettes && _val->getName().startsWith(FPSTR(ALMLPT_LEDS_001))==1){ 
       if(isRandDemo()){
           paletteIdx = random(_val->getMin().toInt(),_val->getMax().toInt()+1);
       } else

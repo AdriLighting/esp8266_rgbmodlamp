@@ -65,6 +65,8 @@ void aramoire_segemnt::segemnt_new(uint32_t start, uint32_t end, boolean dir, co
   
   Serial.printf_P(PSTR("%4d - %4d - %4d - %4d\n"), start, end, dir, side);
 }
+
+/*
 void aramoire_segemnt::segemnt_leftRight(int numleds){
   _left   = new uint16_t[(numleds*4)];
   _right  = new uint16_t[(numleds*4)];
@@ -169,6 +171,8 @@ void aramoire_segemnt::segemnt_leftRight(int numleds){
 
 
 }
+*/
+
 void aramoire_segemnt::get_segmentCnt(uint8_t &  max){
   max = aramoire_segemntsArray_pos;
 }
@@ -294,15 +298,22 @@ void Output::setValueFromJson(DynamicJsonDocument doc){
 }
 */
 void Output::armoiureFromSpiff(){
+
   DynamicJsonDocument armoire(2048);
+
   char buffer[255];
   sprintf(buffer, "/outputs/armoire_%d.json", _pos);
+
   if (!AP_deserializeFile(armoire, buffer)) return;
+
   // serializeJsonPretty(armoire, Serial);Serial.println();
+  
   // _armoireEtage = armoire[F("select")]["0"].as<uint8_t>();
+  
   uint8_t segs = 0;
   _armoire.get_segmentCnt(segs);  
   for (uint8_t j = 0; j < segs; ++j){
+
     aramoire_segemnts * ptr = _armoire.get_segment(j);
 
     int rSize = 0;
@@ -333,20 +344,6 @@ void Output::armoiureFromSpiff(){
       delete[] split;    
     }
 
-    // String coff = armoire[F("etage")]["coff_" + String(j)].as<String>();
-    // rSize = 0;
-    // split = al_tools::explode(coff, '.', rSize);
-    // if (split) {
-    //   uint8_t r = atoi(split[0]);
-    //   uint8_t g = atoi(split[1]);
-    //   uint8_t b = atoi(split[2]);
-    //   for(int i = 0; i < rSize; ++i) {
-    //     delete split[i];
-    //   }
-    //   delete[] split;    
-    //   ptr->_coff = CRGB(r,g,b);      
-    // }
-
     String hsv = armoire[F("etage")]["hsv_" + String(j)].as<String>();
     rSize = 0;
     if (split) {
@@ -359,9 +356,6 @@ void Output::armoiureFromSpiff(){
       }
       delete[] split;  
     }
-
-
-
   } 
 }
 void Output::setValueFromSpiff(const String & path){
@@ -414,12 +408,9 @@ void Output::setValueFromSpiff(const String & path){
 
   if ( _eff_activ )  {
     if (_effects[_pos]){
-        // char buffer[80];
-        // LAMPPTRGET()->getStripFolder(_pos, buffer);
-        uint16_t effPos  = getHex(lineRead, 57);
-        // _effects[_pos]->workerset(_pos, effPos, true, true, buffer, false); 
-        ProgramPtrGet()->set_itemById(effPos);  
-        LAMPPTRGET()->effectChangeByPos(_pos, effPos, LAMPPTRGET()->isFaderOn(), true);
+      uint16_t effPos  = getHex(lineRead, 57);
+      ProgramPtrGet()->set_itemById(effPos);  
+      LAMPPTRGET()->effectChangeByPos(_pos, effPos, LAMPPTRGET()->isFaderOn(), true);
     }
   }
 
@@ -467,12 +458,13 @@ CRGB      Output::get_coff        (){return _coff;};
 
 boolean   Output::get_eff_activ   (){return _eff_activ;};
 
-void Output::set_eff_autoplay(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_eff_autoplay)) return;
-  if (!ProgramPtrGet())               return;
+boolean Output::set_eff_autoplay(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_eff_autoplay)) return false;
+  if (!ProgramPtrGet())               return false;
   boolean v = value[F("v")].as<boolean>(); 
   if (v)  ProgramPtrGet()->remote_action(apSetter_t::APSET_PLAY_START);
   else    ProgramPtrGet()->remote_action(apSetter_t::APSET_PLAY_STOP);
+  return true;
 }
 
 /*
@@ -493,144 +485,169 @@ void Output::set_eff_f(const String & cmd, const JsonObject & value){
 }
 */
 
-void Output::set_etage(const String & cmd, const JsonObject & value){ // eff_avtiv
+boolean Output::set_etage(const String & cmd, const JsonObject & value){ // eff_avtiv
   uint8_t v = value[F("v")].as<uint8_t>();
   if (cmd == FPSTR(req_etage)) {
     _armoireEtage = v-1;
-    set_colorArmoireToOutput();    
+    set_colorArmoireToOutput();   
+    return true;
   }
   if (cmd == FPSTR(req_etages)) {
     _armoireEtage = v;
-    set_colorArmoireToOutput();    
+    set_colorArmoireToOutput();  
+    return true;  
   }
+  return false;
 }
 
-void Output::set_eff_activ(const String & cmd, const JsonObject & value){ // eff_avtiv
-  if (cmd != FPSTR(req_eff_activ)) return;
+boolean Output::set_eff_activ(const String & cmd, const JsonObject & value){ // eff_avtiv
+  if (cmd != FPSTR(req_eff_activ)) return false;
   uint8_t v = value[F("v")].as<uint8_t>();
   clear();
   if (!_eff_activ && (v == 0) ) {
     _eff_activ = true;
   } 
   if (_eff_activ && (v == 1) ) _eff_activ = false;
+  return true;
 }
-void Output::set_eff_speedIncr(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_eff_speedIncr)) return;
+boolean Output::set_eff_speedIncr(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_eff_speedIncr)) return false;
   int8_t v = value[F("v")].as<int8_t>();
   LAMPPTRGET()->effect_setspd_incr(_pos, v);
+  return true;
 }
-void Output::set_eff_speed(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_eff_speed)) return;
+boolean Output::set_eff_speed(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_eff_speed)) return false;
   uint8_t v = value[F("v")].as<uint8_t>();
   LAMPPTRGET()->effect_setspd(_pos, v);
+  return true;
 }
-void Output::set_eff_bri(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_eff_bri)) return;
+boolean Output::set_eff_bri(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_eff_bri)) return false;
   uint8_t v = value[F("v")].as<uint8_t>();
   LAMPPTRGET()->effect_setbri(_pos, v);
+  return true;
 }
-void Output::set_eff_scale(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_eff_scale)) return;
+boolean Output::set_eff_scale(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_eff_scale)) return false;
   uint8_t v = value[F("v")].as<uint8_t>();
   LAMPPTRGET()->effect_setscale(_pos, v);
+  return true;
 }
-void Output::set_eff_id(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_eff_id)) return;
+boolean Output::set_eff_id(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_eff_id)) return false;
   uint8_t v   = value[F("v")].as<uint8_t>();
   uint8_t id  = value[F("id")].as<uint8_t>();
   LAMPPTRGET()->effect_id(_pos, id, v);
+  return true;
 }  
-void Output::set_eff_colorMod(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_eff_effColorMod)) return;
+boolean Output::set_eff_colorMod(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_eff_effColorMod)) return false;
   uint8_t v = value[F("v")].as<uint8_t>();
   _eff_colorMod = v;
+  return true;
 }
 
-void Output::set_select(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_s_output)) return;
+boolean Output::set_select(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_s_output)) return false;
   uint8_t v = value[F("v")].as<uint8_t>();
   (v == 1) ? _select = true : _select = false;
+  return true;
 }
 
-void Output::set_toggle(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_toglle)) return;
+boolean Output::set_toggle(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_toglle)) return false;
   onoff();
+  return true;
 }
-void Output::set_onoff(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_lampOnOff)) return;
+boolean Output::set_onoff(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_lampOnOff)) return false;
   onoff(value);
+  return true;
 }
 
-void Output::set_bri(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_ledBri)) return;
+boolean Output::set_bri(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_ledBri)) return false;
   uint8_t v = value[F("v")].as<uint8_t>(); 
   set_briGen(v);
+  return true;
 }
-void Output::set_briIncr(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_ledBriIncr)) return;
+boolean Output::set_briIncr(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_ledBriIncr)) return false;
   int8_t v = value[F("v")].as<int8_t>(); 
   set_briIncr(v);
+  return true;
 }
 
-void Output::set_tw(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_lampWhite)) return;
-  if (!get_onoff()) return;
+boolean Output::set_tw(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_lampWhite)) return false;
+  if (!get_onoff()) return false;
   set_color_tw(value); 
+  return true;
 }
-void Output::set_tw_f(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_lampWhite_f)) return;
-  if (!get_onoff()) return;
+boolean Output::set_tw_f(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_lampWhite_f)) return false;
+  if (!get_onoff()) return false;
   _eff_activ = false;
   clear();
   set_color_tw(_tw); 
+  return true;
 }  
-void Output::set_tw_v(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_lampWhite_v)) return;
-  if (!get_onoff()) return;
+boolean Output::set_tw_v(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_lampWhite_v)) return false;
+  if (!get_onoff()) return false;
   set_color_tw_v(value);
+  return true;
 }
-void Output::set_hsv_h(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_lampHue)) return;
-  if (!get_onoff()) return;   
+boolean Output::set_hsv_h(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_lampHue)) return false;
+  if (!get_onoff()) return false;   
   set_color_h(value);
+  return true;
 }
-void Output::set_hsv_hIncr(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_lampHueIncr)) return;
-  if (!get_onoff()) return;   
+boolean Output::set_hsv_hIncr(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_lampHueIncr)) return false;
+  if (!get_onoff()) return false;   
   set_color_hIncr(value);
+  return true;
 }
 
-void Output::set_hsv_s(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_lampSat)) return;
-  if (!get_onoff()) return;
+boolean Output::set_hsv_s(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_lampSat)) return false;
+  if (!get_onoff()) return false;
   set_color_s(value);
+  return true;
 }
-void Output::set_hsv_v(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_lampBri)) return;
-  if (!get_onoff()) return;
+boolean Output::set_hsv_v(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_lampBri)) return false;
+  if (!get_onoff()) return false;
   set_color_v(value);
+  return true;
 }
 
-void Output::set_rgb_f(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_lampSetColor_f)) return;
-  if (!get_onoff()) return;
+boolean Output::set_rgb_f(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_lampSetColor_f)) return false;
+  if (!get_onoff()) return false;
   if (_eff_activ) {
-    
     _eff_activ = false;
   }  
   clear();
   set_color_rgb(value,false);
+  return true;
 }  
-void Output::set_rgb(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_lampSetColor)) return;
-  if (!get_onoff()) return;
+boolean Output::set_rgb(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_lampSetColor)) return false;
+  if (!get_onoff()) return false;
+  // Serial.println("set_rgb");
   set_color_rgb(value);
+  return true;
 }
 
-void Output::set_eff_rgb1(const String & cmd, const JsonObject & value){
-  if (cmd != FPSTR(req_lampSetColor)) return;
-  if (!get_onoff()) return;
+boolean Output::set_eff_rgb1(const String & cmd, const JsonObject & value){
+  if (cmd != FPSTR(req_lampSetColor)) return false;
+  if (!get_onoff()) return false;
   set_color_eff_rgb1(value);
+  return true;
 }
 
 
@@ -713,8 +730,6 @@ void Output::set_color(CRGB c, int tw) {
         }          
       }
     }
-
-
     return;
   }
 
@@ -724,6 +739,7 @@ void Output::set_color(CRGB c, int tw) {
     } else ledsSet::fill(_pos, c);
   } else ledsSet::fill(_pos, c);
 }
+
 void Output::set_color() {
   boolean stripW;
   leds_managePtrGet()->get_ledsIsTw(_pos, stripW);
@@ -763,8 +779,6 @@ void Output::set_color() {
         }          
       }
     }
-
-
     return;
   }
 
@@ -778,143 +792,126 @@ void Output::set_color() {
   } else ledsSet::fill(_pos, _c1);
 }
 
-  // void Output::set_segmentColor(uint8_t pos){ 
+void Output::set_briArmoire(int8_t amount, boolean add){
+  if (!_isArmoire) return;
 
-  // }
-  // void Output::set_color(uint8_t pos, CRGBW w){ 
-  //   CRGBW * ledarray_w  = leds_managePtrGet()->get_crgwbArray(_pos);
-    
-  //   aramoire_segemnts   * ptr;
-  //   aramoire_segemnt    * setSeg = aramoire_segemntPtr_get();
-  //   ptr = setSeg->get_sideSegment(aramoire_side_left, pos);
-  //   for(uint16_t j=ptr->_start; j <= ptr->_stop; j++) {
-  //     ledarray_w[j]  = w; 
-  //   } 
-  //   ptr = setSeg->get_sideSegment(aramoire_side_right, pos);
-  //   for(uint16_t j=ptr->_start; j <= ptr->_stop; j++) {
-  //     ledarray_w[j]  = w; 
-  //   }                          
-  // }
-  void Output::set_briArmoire(int8_t amount, boolean add){
-    if (!_isArmoire) return;
+  boolean stripW;
+  leds_managePtrGet()->get_ledsIsTw(_pos, stripW);
 
-    boolean stripW;
-    leds_managePtrGet()->get_ledsIsTw(_pos, stripW);
+  if (_armoireEtage == 0) {
+    uint8_t segs = 0;
+    _armoire.get_segmentCnt(segs);
+    for (uint8_t j = 0; j < segs; ++j){
+      aramoire_segemnts * ptr = _armoire.get_segment(j);
 
-    if (_armoireEtage == 0) {
-      uint8_t segs = 0;
-      _armoire.get_segmentCnt(segs);
-      for (uint8_t j = 0; j < segs; ++j){
-        aramoire_segemnts * ptr = _armoire.get_segment(j);
-
-        if (ptr->_isTw && stripW) {
-          if (_onoff) {
-            ptr->_tw = ((add) ? ptr->_tw : 0) + amount;
-            ptr->_hsv_v = ptr->_tw;
-            CRGB hsv = CHSV(ptr->_hsv_h, ptr->_hsv_s, ptr->_hsv_v);
-            ptr->_rgb_r = hsv.r;
-            ptr->_rgb_g = hsv.g;
-            ptr->_rgb_b = hsv.b;        
-          }
-        } else {
-          if (ptr->_isTw) {
-            ptr->_tw = ((add)? ptr->_tw : 0) + amount;
-            ptr->_hsv_v = ptr->_tw;
-            CRGB hsv = CHSV(ptr->_hsv_h, ptr->_hsv_s, ptr->_hsv_v);
-            ptr->_rgb_r = hsv.r;
-            ptr->_rgb_g = hsv.g;
-            ptr->_rgb_b = hsv.b;         
-            ptr->_c1 = CHSV(
-              45U,                                                                              
-              map(ptr->_tw_v, 0U, 255U, 0U, 170U),                           
-              ptr->_tw
-            ); 
-            ptr->_coff = ptr->_c1;
-          } else {
-            ptr->_hsv_v = ((add)? ptr->_hsv_v : 0) + amount;
-            ptr->_tw = ptr->_hsv_v;
-            CRGB hsv = CHSV(ptr->_hsv_h, ptr->_hsv_s, ptr->_hsv_v);
-            ptr->_rgb_r = hsv.r;
-            ptr->_rgb_g = hsv.g;
-            ptr->_rgb_b = hsv.b;   
-            ptr->_c1 = CRGB(ptr->_rgb_r, ptr->_rgb_g, ptr->_rgb_b);     
-            ptr->_coff = ptr->_c1;
-          }
+      if (ptr->_isTw && stripW) {
+        if (_onoff) {
+          ptr->_tw = ((add) ? ptr->_tw : 0) + amount;
+          ptr->_hsv_v = ptr->_tw;
+          CRGB hsv = CHSV(ptr->_hsv_h, ptr->_hsv_s, ptr->_hsv_v);
+          ptr->_rgb_r = hsv.r;
+          ptr->_rgb_g = hsv.g;
+          ptr->_rgb_b = hsv.b;        
         }
-
-
-
-      }   
-    } else {
-      set_colorArmoire();
-    }
+      } else {
+        if (ptr->_isTw) {
+          ptr->_tw = ((add)? ptr->_tw : 0) + amount;
+          ptr->_hsv_v = ptr->_tw;
+          CRGB hsv = CHSV(ptr->_hsv_h, ptr->_hsv_s, ptr->_hsv_v);
+          ptr->_rgb_r = hsv.r;
+          ptr->_rgb_g = hsv.g;
+          ptr->_rgb_b = hsv.b;         
+          ptr->_c1 = CHSV(
+            45U,                                                                              
+            map(ptr->_tw_v, 0U, 255U, 0U, 170U),                           
+            ptr->_tw
+          ); 
+          ptr->_coff = ptr->_c1;
+        } else {
+          ptr->_hsv_v = ((add)? ptr->_hsv_v : 0) + amount;
+          ptr->_tw = ptr->_hsv_v;
+          CRGB hsv = CHSV(ptr->_hsv_h, ptr->_hsv_s, ptr->_hsv_v);
+          ptr->_rgb_r = hsv.r;
+          ptr->_rgb_g = hsv.g;
+          ptr->_rgb_b = hsv.b;   
+          ptr->_c1 = CRGB(ptr->_rgb_r, ptr->_rgb_g, ptr->_rgb_b);     
+          ptr->_coff = ptr->_c1;
+        }
+      }
+    }   
+  } else {
+    set_colorArmoire();
   }
-  void Output::set_colorArmoireToOutput(){
-    if (!_isArmoire) return; 
-    if (_armoireEtage == 0) return;
+}
 
-      aramoire_segemnts * ptr = _armoire.get_sideSegment(aramoire_side_right, _armoireEtage-1);
+void Output::set_colorArmoireToOutput(){
+  if (!_isArmoire) return; 
+  if (_armoireEtage == 0) return;
+
+  aramoire_segemnts * ptr = _armoire.get_sideSegment(aramoire_side_right, _armoireEtage-1);
 
 
-        _isTw       = ptr->_isTw; 
-        _tw         = ptr->_tw;
-        _tw_v       = ptr->_tw_v;
-        _hsv_h      = ptr->_hsv_h;
-        _hsv_s      = ptr->_hsv_s;
-        _hsv_v      = ptr->_hsv_v;
-        _rgb_r      = ptr->_rgb_r;
-        _rgb_g      = ptr->_rgb_g;
-        _rgb_b      = ptr->_rgb_b;
-        _c1         = ptr->_c1;
-        _coff       = ptr->_coff;   
+  _isTw       = ptr->_isTw; 
+  _tw         = ptr->_tw;
+  _tw_v       = ptr->_tw_v;
+  _hsv_h      = ptr->_hsv_h;
+  _hsv_s      = ptr->_hsv_s;
+  _hsv_v      = ptr->_hsv_v;
+  _rgb_r      = ptr->_rgb_r;
+  _rgb_g      = ptr->_rgb_g;
+  _rgb_b      = ptr->_rgb_b;
+  _c1         = ptr->_c1;
+  _coff       = ptr->_coff;   
 
+}
+
+void Output::set_colorArmoire(){
+  if (!_isArmoire) return;
+  if (_armoireEtage == 0) {
+    uint8_t segs = 0;
+    _armoire.get_segmentCnt(segs);
+    for (uint8_t j = 0; j < segs; ++j){
+      aramoire_segemnts * ptr = _armoire.get_segment(j);
+      ptr->_isTw  = _isTw;
+      ptr->_tw    = _tw;
+      ptr->_tw_v  = _tw_v;
+      ptr->_hsv_h = _hsv_h;
+      ptr->_hsv_s = _hsv_s;
+      ptr->_hsv_v = _hsv_v;
+      ptr->_rgb_r = _rgb_r;
+      ptr->_rgb_g = _rgb_g;
+      ptr->_rgb_b = _rgb_b;
+      ptr->_c1    = _c1;
+      ptr->_coff  = _coff;
+    }   
+  } else {
+    aramoire_segemnts * ptr = _armoire.get_sideSegment(aramoire_side_left, _armoireEtage-1);
+      ptr->_isTw  = _isTw;
+      ptr->_tw    = _tw;
+      ptr->_tw_v  = _tw_v;
+      ptr->_hsv_h = _hsv_h;
+      ptr->_hsv_s = _hsv_s;
+      ptr->_hsv_v = _hsv_v;
+      ptr->_rgb_r = _rgb_r;
+      ptr->_rgb_g = _rgb_g;
+      ptr->_rgb_b = _rgb_b;
+      ptr->_c1    = _c1;
+      ptr->_coff  = _coff;        
+    ptr = _armoire.get_sideSegment(aramoire_side_right, _armoireEtage-1);
+      ptr->_isTw  = _isTw;
+      ptr->_tw    = _tw;
+      ptr->_tw_v  = _tw_v;
+      ptr->_hsv_h = _hsv_h;
+      ptr->_hsv_s = _hsv_s;
+      ptr->_hsv_v = _hsv_v;
+      ptr->_rgb_r = _rgb_r;
+      ptr->_rgb_g = _rgb_g;
+      ptr->_rgb_b = _rgb_b;        
+      ptr->_c1    = _c1;        
+      ptr->_coff  = _coff;        
   }
-  void Output::set_colorArmoire(){
-    if (!_isArmoire) return;
-    if (_armoireEtage == 0) {
-      uint8_t segs = 0;
-      _armoire.get_segmentCnt(segs);
-      for (uint8_t j = 0; j < segs; ++j){
-        aramoire_segemnts * ptr = _armoire.get_segment(j);
-        ptr->_isTw  = _isTw;
-        ptr->_tw    = _tw;
-        ptr->_tw_v  = _tw_v;
-        ptr->_hsv_h = _hsv_h;
-        ptr->_hsv_s = _hsv_s;
-        ptr->_hsv_v = _hsv_v;
-        ptr->_rgb_r = _rgb_r;
-        ptr->_rgb_g = _rgb_g;
-        ptr->_rgb_b = _rgb_b;
-        ptr->_c1    = _c1;
-        ptr->_coff  = _coff;
-      }   
-    } else {
-      aramoire_segemnts * ptr = _armoire.get_sideSegment(aramoire_side_left, _armoireEtage-1);
-        ptr->_isTw  = _isTw;
-        ptr->_tw    = _tw;
-        ptr->_tw_v  = _tw_v;
-        ptr->_hsv_h = _hsv_h;
-        ptr->_hsv_s = _hsv_s;
-        ptr->_hsv_v = _hsv_v;
-        ptr->_rgb_r = _rgb_r;
-        ptr->_rgb_g = _rgb_g;
-        ptr->_rgb_b = _rgb_b;
-        ptr->_c1    = _c1;
-        ptr->_coff  = _coff;        
-      ptr = _armoire.get_sideSegment(aramoire_side_right, _armoireEtage-1);
-        ptr->_isTw  = _isTw;
-        ptr->_tw    = _tw;
-        ptr->_tw_v  = _tw_v;
-        ptr->_hsv_h = _hsv_h;
-        ptr->_hsv_s = _hsv_s;
-        ptr->_hsv_v = _hsv_v;
-        ptr->_rgb_r = _rgb_r;
-        ptr->_rgb_g = _rgb_g;
-        ptr->_rgb_b = _rgb_b;        
-        ptr->_c1    = _c1;        
-        ptr->_coff  = _coff;        
-    }
-  }
+}
+
 void Output::set_color_tw_v(const JsonObject & value){
   uint8_t scale = value[F("v")].as<uint8_t>();
   _c1 = CHSV(
@@ -956,6 +953,7 @@ void Output::set_color_tw(const JsonObject & value){
   set_color();
   leds_managePtrGet()->showLeds(_pos, _bri); 
 }
+
 void Output::set_color_rgb(const JsonObject & value, boolean setBri) {
   uint8_t r = value[F("r")].as<uint8_t>();
   uint8_t g = value[F("g")].as<uint8_t>();

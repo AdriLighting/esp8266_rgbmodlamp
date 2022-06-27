@@ -1,5 +1,6 @@
 #include "../../include/pixeleffect/pixeleffect.h"
 #include "../../include/display/lamp.h"
+#include "../../include/device/device.h"
 
 
 EffectWorker::EffectWorker(LAMPSTATE * lampstate){
@@ -11,7 +12,7 @@ EffectWorker::~EffectWorker(){
 }
 void EffectWorker::clearControlsList()
 {
-  ALT_TRACEC(ALML_DEBUGREGION_EFFECT, "\n[clearControlsList]\n");
+  ALT_TRACEC(ALML_DEBUGREGION_EFFECT, "-\n");
   while (controls.size()) {
       UIControl *ctrl = controls.shift();
       delete ctrl;
@@ -47,12 +48,34 @@ boolean EffectWorker::loadeffconfig(const uint16_t nb, const char *folder) {
     setDefault = true; 
   }
 
+  // serializeJsonPretty(doc, Serial);Serial.println();
+
   curEff = doc[F("nb")].as<uint16_t>();
-  
   const char* name = doc[F("name")];
-  effectName = name ? name : (String)(FPSTR(_effeNamIDList[(uint8_t)nb]._nameId));
-  ALT_TRACEC(ALML_DEBUGREGION_EFFECT, "&c:1&s:\teffname from struct: %s\n", FPSTR(_effeNamIDList[(uint8_t)nb]._nameId));
-  ALT_TRACEC(ALML_DEBUGREGION_EFFECT, "&c:1&s:\teffname from struct to string: %s\n", effectName.c_str());
+
+  uint8_t resetJson = 0;
+  if (al_tools::ch_toString(name) != FPSTR(_effeNamIDList[(uint8_t)nb]._nameId))  resetJson = 1;
+  if (curEff != nb)                                                               resetJson = (resetJson==1) ? 3 : 2;
+  if (resetJson>0) {
+    if (resetJson == 1) ALT_TRACEC(ALML_DEBUGREGION_EFFECT, "&c:1&s:\tERROR from JSON : name from struct != JSON name\n");
+    if (resetJson == 2) ALT_TRACEC(ALML_DEBUGREGION_EFFECT, "&c:1&s:\tERROR from JSON : id eff != JSON id eff \n");
+    if (resetJson == 3) ALT_TRACEC(ALML_DEBUGREGION_EFFECT, "&c:1&s:\tERROR from JSON : name from struct && id eff != JSON name && id eff \n");
+    doc.clear();
+    FILESYSTEM.remove(filename);
+    savedefaulteffconfig(nb, filename);   
+    if (!deserializeFile(doc, filename.c_str() )) {
+      ALT_TRACEC(ALML_DEBUGREGION_EFFECT, "&c:1&s:\tERROR deserializeFile from default file\n");
+      FILESYSTEM.remove(filename); 
+      return false;
+    } 
+    setDefault = true;     
+    // serializeJsonPretty(doc, Serial);Serial.println();
+  }
+
+  // effectName = name ? name : (String)(FPSTR(_effeNamIDList[(uint8_t)nb]._nameId));
+  effectName = (String)(FPSTR(_effeNamIDList[(uint8_t)nb]._nameId));
+  ALT_TRACEC(ALML_DEBUGREGION_EFFECT, "&c:1&s:\teffname from STRUCT: %s\n", FPSTR(_effeNamIDList[(uint8_t)nb]._nameId));
+  ALT_TRACEC(ALML_DEBUGREGION_EFFECT, "&c:1&s:\teffname from JSON: %s\n", name);
 
 
   JsonArray arr = doc[F("ctrls")].as<JsonArray>();
@@ -65,9 +88,9 @@ boolean EffectWorker::loadeffconfig(const uint16_t nb, const char *folder) {
           id_tst |= 1<<item[F("id")].as<uint8_t>();
           String name = item.containsKey(F("name")) ?
               item[F("name")].as<String>()
-              : id == 0 ? String(FPSTR(TINTF_00D))
-              : id == 1 ? String(FPSTR(TINTF_087))
-              : id == 2 ? String(FPSTR(TINTF_088))
+              : id == 0 ? String(FPSTR(ALMLPT_LEDS_005))
+              : id == 1 ? String(FPSTR(ALMLPT_LEDS_006))
+              : id == 2 ? String(FPSTR(ALMLPT_LEDS_007))
               : String(F("Доп."))+String(id);
           String val = item.containsKey(F("val")) ? item[F("val")].as<String>() : String(1);
           String min = item.containsKey(F("min")) && id>1 ? item[F("min")].as<String>() : String(1);
@@ -95,7 +118,7 @@ boolean EffectWorker::loadeffconfig(const uint16_t nb, const char *folder) {
               id,                                     // id
               CONTROL_TYPE::RANGE,                    // type
               CONTROL_CASE::ALWAYS,                   // typeState
-              id==0 ? FPSTR(TINTF_00D) : id==1 ? FPSTR(TINTF_087) : FPSTR(TINTF_088),           // name
+              id==0 ? FPSTR(ALMLPT_LEDS_005) : id==1 ? FPSTR(ALMLPT_LEDS_006) : FPSTR(ALMLPT_LEDS_007),           // name
               String(127),                            // value
               String(1),                              // min
               String(255),                            // max
@@ -221,11 +244,11 @@ void EffectWorker::savedefaulteffconfig(uint16_t nb, String filename){
   cfg.replace(F("@name@"), efname);
   cfg.replace(F("@nb@"), String(nb));
 
-  #ifdef ALT_DEBUG_TARCE
-    DynamicJsonDocument doc(1024);
-    deserializeJson(doc, cfg);
-    serializeJsonPretty(doc, Serial);Serial.println();  
-  #endif
+  // #ifdef ALT_DEBUG_TARCE
+  //   DynamicJsonDocument doc(1024);
+  //   deserializeJson(doc, cfg);
+  //   serializeJsonPretty(doc, Serial);Serial.println();  
+  // #endif
 
   File configFile = FILESYSTEM.open(filename, "w"); 
   if (configFile){
@@ -315,6 +338,12 @@ void EffectWorker::workerset(uint8_t stripPos, uint16_t effect, const bool isCfg
     LAMPPTRGET()->set_hueLoop     (LAMPPTRGET()->effectsLoop_hue());
     LAMPPTRGET()->set_palLoop     (LAMPPTRGET()->effectsLoop_pal());
     LAMPPTRGET()->set_palgradLoop (LAMPPTRGET()->effectsLoop_palGrad());
+
+    #ifdef ALML_TFT
+      _eff_bri._value   = -1;
+      _eff_speed._value = -1;
+      _eff_scale._value = -1;  
+    #endif
 
     #ifdef ALT_DEBUG_TARCE    
       ALT_TRACEC(ALML_DEBUGREGION_EFFECT, "&c:1&s:\tPRINT CONTROLS\n");

@@ -3,28 +3,28 @@
 
 
 PROGMEM effeNamIDList _effeNamIDList [] = {
-{TEFF_Pride,                          E_FX_Wave,              "NONE",         "1", "0", -1}, /* EffectFx_mode_pride                 - 0 - 1 */
-{TEFF_PrideSyncro,                    E_FX_Wave,              "NONE",         "1", "1", -1}, /* EffectFx_mode_pride                 - 0 - 1 */
-{TEFF_ColorWave,                      E_FX_Wave,              "PALGRAD",      "1", "0", -1}, /* EffectFx_mode_colorwaves            - 0 - 1 */
-{TEFF_ColorWaveSyncro,                E_FX_Wave,              "PALGRAD",      "1", "1", -1}, /* EffectFx_mode_colorwaves            - 0 - 1 */
-{TEFF_RainbowCycle,                   E_FX_RainbowCycle,      "NONE",         "1", "0", -1}, /* EffectFx_mode_rainbow_cycle         - 0 - 1 */
-{TEFF_RainbowCycleSyncro,             E_FX_RainbowCycleSync,  "NONE",         "1", "1", -1}, /* EffectFx_mode_rainbow_cycle         - 0 - 1 */
-{TEFF_Rainbow,                        E_FX_Rainbow,           "NONE",         "1", "0", -1}, /* EffectFx_mode_rainbow               - 1 - 1 */
-{TEFF_ColorWipe,                      E_FX_ColorWipe,         "HUETIMER",     "1", "0", -1}, /* EffectFx_mode_color_wipe            - 0 - 1 */
-{TEFF_ColorWipeSyncro,                E_FX_ColorWipe,         "HUETIMER",     "1", "1", -1}, /* EffectFx_mode_color_wipe            - 0 - 1 */
-{TEFF_ColorWipeReverseinverse,        E_FX_ColorWipe,         "HUETIMER",     "1", "0", -1}, /* EffectFx_mode_color_wipe_rev_inv    - 0 - 1 */
-{TEFF_ColorWipeReverseinverseSyncro,  E_FX_ColorWipe,         "HUETIMER",     "1", "1", -1}, /* EffectFx_mode_color_wipe_rev_inv    - 0 - 1 */
-{TEFF_ColorWipeRandom,                E_FX_ColorWipeRnd,      "NONE",         "1", "0", -1}, /* EffectFx_mode_color_wipe_random     - 0 - 1 */
-{TEFF_ColorWipeRandomSyncro,          E_FX_ColorWipeRnd,      "NONE",         "1", "1", -1}, /* EffectFx_mode_color_wipe_random     - 0 - 1 */
-{TEFF_TricolorChase,                  E_FX_TricolorChase,     "HTPG",         "1", "0", -1}, /* EffectFx_mode_tricolor_chase        - 0 - 1 */
-{TEFF_TricolorChasesyncro,            E_FX_TricolorChaseSync, "HTPG",         "1", "1", -1}, /* EffectFx_mode_tricolor_chase        - 0 - 1 */
-{TEFF_Breath,                         E_FX_Breath,            "HTPG",         "1", "0", -1}, /* EffectFx_mode_breath                - 0 - 1 */
-{TEFF_Colortwinkle,                   E_FX_Colortwinkle,      "NONE",         "1", "0", -1}, /* EffectFx_mode_colortwinkle          - 0 - 1 */
-{TEFF_Commets,                        E_FX_Commets,           "HUETIMER",     "2", "0", -1}, /* EffectFx_comets                     - 0 - 2 */
-{TEFF_Commet,                         E_FX_Commet,            "HUETIMER",     "2", "0", -1}, /* EffectFx_Comet                      - 0 - 2 */
-{TEFF_Ruggle,                         E_FX_Move,              "HUETIMER",     "2", "0", -1}, /* EffectFx_ruggle                     - 0 - 2 */
-{TEFF_RainbowWave,                    E_FX_RainbowWave,       "NONE",         "2", "0", -1}, /* EffectFx_rainbowWave                - 0 - 2 */
-{TEFF_ArmoireOutsideToInside,         E_FX_Armoire_1,         "HUETIMER",     "2", "0", -1}, /* EffectFx_rainbowWave                - 0 - 2 */
+{ALMLPT_EFF_Pride,                          E_FX_Wave,              "NONE",         "1", "0", -1}, /* EffectFx_mode_pride                 - 0 - 1 */
+{ALMLPT_EFF_PrideSyncro,                    E_FX_Wave,              "NONE",         "1", "1", -1}, /* EffectFx_mode_pride                 - 0 - 1 */
+{ALMLPT_EFF_ColorWave,                      E_FX_Wave,              "PALGRAD",      "1", "0", -1}, /* EffectFx_mode_colorwaves            - 0 - 1 */
+{ALMLPT_EFF_ColorWaveSyncro,                E_FX_Wave,              "PALGRAD",      "1", "1", -1}, /* EffectFx_mode_colorwaves            - 0 - 1 */
+{ALMLPT_EFF_RainbowCycle,                   E_FX_RainbowCycle,      "NONE",         "1", "0", -1}, /* EffectFx_mode_rainbow_cycle         - 0 - 1 */
+{ALMLPT_EFF_RainbowCycleSyncro,             E_FX_RainbowCycleSync,  "NONE",         "1", "1", -1}, /* EffectFx_mode_rainbow_cycle         - 0 - 1 */
+{ALMLPT_EFF_Rainbow,                        E_FX_Rainbow,           "NONE",         "1", "0", -1}, /* EffectFx_mode_rainbow               - 1 - 1 */
+{ALMLPT_EFF_ColorWipe,                      E_FX_ColorWipe,         "HUETIMER",     "1", "0", -1}, /* EffectFx_mode_color_wipe            - 0 - 1 */
+{ALMLPT_EFF_ColorWipeSyncro,                E_FX_ColorWipe,         "HUETIMER",     "1", "1", -1}, /* EffectFx_mode_color_wipe            - 0 - 1 */
+{ALMLPT_EFF_ColorWipeReverseinverse,        E_FX_ColorWipe,         "HUETIMER",     "1", "0", -1}, /* EffectFx_mode_color_wipe_rev_inv    - 0 - 1 */
+{ALMLPT_EFF_ColorWipeReverseinverseSyncro,  E_FX_ColorWipe,         "HUETIMER",     "1", "1", -1}, /* EffectFx_mode_color_wipe_rev_inv    - 0 - 1 */
+{ALMLPT_EFF_ColorWipeRandom,                E_FX_ColorWipeRnd,      "NONE",         "1", "0", -1}, /* EffectFx_mode_color_wipe_random     - 0 - 1 */
+{ALMLPT_EFF_ColorWipeRandomSyncro,          E_FX_ColorWipeRnd,      "NONE",         "1", "1", -1}, /* EffectFx_mode_color_wipe_random     - 0 - 1 */
+{ALMLPT_EFF_TricolorChase,                  E_FX_TricolorChase,     "HTPG",         "1", "0", -1}, /* EffectFx_mode_tricolor_chase        - 0 - 1 */
+{ALMLPT_EFF_TricolorChasesyncro,            E_FX_TricolorChaseSync, "HTPG",         "1", "1", -1}, /* EffectFx_mode_tricolor_chase        - 0 - 1 */
+{ALMLPT_EFF_Breath,                         E_FX_Breath,            "HTPG",         "1", "0", -1}, /* EffectFx_mode_breath                - 0 - 1 */
+{ALMLPT_EFF_Colortwinkle,                   E_FX_Colortwinkle,      "NONE",         "1", "0", -1}, /* EffectFx_mode_colortwinkle          - 0 - 1 */
+{ALMLPT_EFF_Commets,                        E_FX_Commets,           "HUETIMER",     "2", "0", -1}, /* EffectFx_comets                     - 0 - 2 */
+{ALMLPT_EFF_Commet,                         E_FX_Commet,            "HUETIMER",     "2", "0", -1}, /* EffectFx_Comet                      - 0 - 2 */
+{ALMLPT_EFF_Ruggle,                         E_FX_Move,              "HUETIMER",     "2", "0", -1}, /* EffectFx_ruggle                     - 0 - 2 */
+{ALMLPT_EFF_RainbowWave,                    E_FX_RainbowWave,       "NONE",         "2", "0", -1}, /* EffectFx_rainbowWave                - 0 - 2 */
+{ALMLPT_EFF_ArmoireOutsideToInside,         E_FX_Armoire_1,         "HUETIMER",     "2", "0", -1}, /* EffectFx_rainbowWave                - 0 - 2 */
 };
 
 void effectType_toString(OUTPUT_EFFECTTYPE type, String & result){

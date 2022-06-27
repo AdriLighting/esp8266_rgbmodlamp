@@ -67,9 +67,9 @@
     uint32_t _effectsLoop_timerPalGradMax = 30000;     
     unsigned long _timer_effectsLoopPal;
     unsigned long _timer_effectsLoopPalGrad;  
-    void effectsLoop_TimerHue(const String & cmd, const JsonObject & value);
-    void effectsLoop_TimerPal(const String & cmd, const JsonObject & value);
-    void effectsLoop_TimerPalGrad(const String & cmd, const JsonObject & value);
+    boolean effectsLoop_TimerHue(const String & cmd, const JsonObject & value);
+    boolean effectsLoop_TimerPal(const String & cmd, const JsonObject & value);
+    boolean effectsLoop_TimerPalGrad(const String & cmd, const JsonObject & value);
 
     void fader(uint8_t sPos, const uint8_t _tgtbrt, std::function<void(void)> callback);
   public:
@@ -88,7 +88,7 @@
       uint8_t           _effTimerMod = 0;
       void effectsLoop_palGrad_reset(uint8_t p =0);
       void effectsLoop_pal_reset(uint8_t p =0);
-      void effectsLoop_Timer(const String & cmd, const JsonObject & value);
+      boolean effectsLoop_Timer(const String & cmd, const JsonObject & value);
       void effectsLoop();
       void effectsLoop_TimerHue(uint32_t);
       uint8_t effectsLoop_hue();

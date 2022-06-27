@@ -21,3 +21,10 @@
 #include "../include/device/device.h"
 #include "../include/device/output.h"
 
+#ifdef ALML_TFT
+	#include "../include/tft/tft.h"	
+	#include "../include/tft/tfttxt.h"	
+#endif
+#ifdef ALML_IRTFT
+	#include "../include/tft/irtft_device.h"	
+#endif

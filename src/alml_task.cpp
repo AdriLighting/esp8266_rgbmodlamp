@@ -72,8 +72,8 @@ boolean TaskDelay::execute () {
   if (!_enabled)    return false;
 
   unsigned long now     = _TASK_TIME_FUNCTION();
-  unsigned long delta = (now >= _last) ? now - _last : (0xffffffff - _last) + now ;
-  boolean done  = (delta >= _delay);
+  unsigned long delta   = (now >= _last) ? now - _last : (0xffffffff - _last) + now ;
+  boolean       done    = (delta >= _delay);
 
   if (done) {
     _last = now;
@@ -116,14 +116,14 @@ void TaskSimple::execute(){
   if (!_timer->isEnabled()) {return;}
 
   if (execute(_timerEnd)) {
-    LOG(ALML_DEBUGREGION_TASK, "[ID: %d][_timerEnd]\n", _ID);
+    if (_debug) LOG(ALML_DEBUGREGION_TASK, "[ID: %d][_timerEnd]\n", _ID);
     if (_timer) _timer->set_enabled(false);
     _timerEnd->set_enabled(false);
     if (_callbackOend) _callbackOend();
   }
 
   if (execute(_timer)) {
-    // LOG(printf_P, PSTR("[ID: %d][TaskSimple::execute] [RUNNIG][_iteration_max: %d][_iteration_cnt: %d]\n"), _ID, _iteration_max, _iteration_cnt);
+    // if (_debug) LOG(printf_P, PSTR("[ID: %d][TaskSimple::execute] [RUNNIG][_iteration_max: %d][_iteration_cnt: %d]\n"), _ID, _iteration_max, _iteration_cnt);
 
     if (_iteration_max>0) {
 
@@ -142,28 +142,32 @@ void TaskSimple::execute(){
         }
       }
     } else {
-      if (_callback) {_callback();
+      if (_callback) {
+        uint32_t checkTimer = millis();
+        _callback();
         yield();
+        uint32_t diff = millis()-checkTimer;
+        if (diff >= 10) LOG(ALML_DEBUGREGION_TASK, "[ID: %3d][NAME: %10s][%d]\n", _ID, _name.c_str(), diff);
       }
     }
   }
-  // LOG(printf, "\n---------------\n[loop]\n---------------\n"); 
+  // if (_debug) LOG(printf, "\n---------------\n[loop]\n---------------\n"); 
   // delay(1000); 
 }
 void TaskSimple::setup(boolean v1){
   if (!_delay) {
-    LOG(ALML_DEBUGREGION_TASK, "[ID: %d]\n", _ID);
+    if (_debug) LOG(ALML_DEBUGREGION_TASK, "[ID: %d]\n", _ID);
     setup_timer("[NODELAY]", v1);
   }
 }
 void TaskSimple::setup_timer(const String & v1, boolean v2){
   char time[12];
   _timeStamp(micros(), time);
-  LOG(ALML_DEBUGREGION_TASK, "[ID: %d]%s[S]\n\t[_iteration_max: %d]\n\t[%s]\n", 
+  if (_debug) LOG(ALML_DEBUGREGION_TASK, "[ID: %d]%s[S]\n\t[_iteration_max: %d]\n\t[%s]\n", 
     _ID, v1.c_str(), _iteration_max, time);
   if (_iteration_max == 0 ) {
     if (v2){
-      LOG(ALML_DEBUGREGION_TASK, "&c:1&s:\t[oneshot]\n");
+      if (_debug) LOG(ALML_DEBUGREGION_TASK, "&c:1&s:\t[oneshot]\n");
       switch (_osMode) {
         case ETO_S:   if (_callbackOstart)  _callbackOstart();  break;
         case ETO_C:   if (_callback)        _callback();        break;
@@ -174,7 +178,7 @@ void TaskSimple::setup_timer(const String & v1, boolean v2){
         default: break;
       }         
       if (_timer && _timer->isEnabled()) {
-        LOG(ALML_DEBUGREGION_TASK, "[_timer: stop]\n");
+        if (_debug) LOG(ALML_DEBUGREGION_TASK, "[_timer: stop]\n");
         _timer->set_enabled(false);
       }
     }
@@ -182,18 +186,18 @@ void TaskSimple::setup_timer(const String & v1, boolean v2){
   else  {
     if (_callbackOstart)_callbackOstart();
     if (_delay) {
-      LOG(ALML_DEBUGREGION_TASK, "&c:1&s:\t[_delay: instanced][starting: %d]\n", v2);
+      if (_debug) LOG(ALML_DEBUGREGION_TASK, "&c:1&s:\t[_delay: instanced][starting: %d]\n", v2);
       _delay->set_enabled(v2);
       _delay->reset();
     } else {
-      LOG(ALML_DEBUGREGION_TASK, "&c:1&s:\t[_delay: not instanced]\n");
+      if (_debug) LOG(ALML_DEBUGREGION_TASK, "&c:1&s:\t[_delay: not instanced]\n");
     }       
     if (_timer) {
-      LOG(ALML_DEBUGREGION_TASK, "&c:1&s:\t[_timer: instanced][starting: %d]\n", v2);
+      if (_debug) LOG(ALML_DEBUGREGION_TASK, "&c:1&s:\t[_timer: instanced][starting: %d]\n", v2);
       _timer->set_enabled(v2);
       _timer->reset();
     } else {
-      LOG(ALML_DEBUGREGION_TASK, "&c:1&s:\t[_timer: not instanced]\n");
+      if (_debug) LOG(ALML_DEBUGREGION_TASK, "&c:1&s:\t[_timer: not instanced]\n");
     }
     if (_timerEnd) {
       char t[12];
@@ -202,14 +206,14 @@ void TaskSimple::setup_timer(const String & v1, boolean v2){
       _timerEnd->get_delay(duration);
       _timeStamp(_TASK_TIME_FUNCTION()+(duration), t);
       _timeStamp(_TASK_TIME_FUNCTION(), t2);
-      LOG(ALML_DEBUGREGION_TASK, "&c:1&s:\t[_timerEnd: instanced][starting: %d][%s -> %s]\n", v2, t2, t);
+      if (_debug) LOG(ALML_DEBUGREGION_TASK, "&c:1&s:\t[_timerEnd: instanced][starting: %d][%s -> %s]\n", v2, t2, t);
       _timerEnd->set_enabled(v2);
       _timerEnd->reset();
     } else {
-      LOG(ALML_DEBUGREGION_TASK, "&c:1&s:\t[_timerEnd: not instanced]\n");
+      if (_debug) LOG(ALML_DEBUGREGION_TASK, "&c:1&s:\t[_timerEnd: not instanced]\n");
     }       
   }
-  LOG(ALML_DEBUGREGION_TASK, "&c:1&s:\t[E]\n");
+  if (_debug) LOG(ALML_DEBUGREGION_TASK, "&c:1&s:\t[E]\n");
 }
 
 void TaskSimple::set_callbackOstart(TaskCallback v1){_callbackOstart = std::move(v1);}
@@ -262,18 +266,80 @@ void TaskSimple::set_enabled(boolean v1) {
  
 boolean TaskSimple::isEnabled() {return _enabled;}
 
+void TaskSimple::set_debug(boolean v1) {
+  _debug = v1;
+}
+
+void TaskSimple::set_name(const String & v1) {
+  _name = v1;
+}
+/*
 al_taskScheduler::al_taskScheduler(uint8_t v1) {
   _TaskArrayMax = v1;
   _TaskArray = new TaskSimple[v1];
 }
-
 al_taskScheduler::~al_taskScheduler() {}
-
 void al_taskScheduler::loop(){
   for(int i=0; i<_TaskArrayMax; i++){if (_TaskArray[i].isEnabled()) _TaskArray[i].execute(); }
 }
 void al_taskScheduler::setup(boolean v1){
   for(int i=0; i<_TaskArrayMax; i++){_TaskArray[i].setup(v1); } 
 }
-
 TaskSimple * al_taskScheduler::get_task(uint8_t p){return &_TaskArray[p];}
+*/
+
+TaskSimple * alml_taskSheduler::get_task(uint8_t p){return _list[p];}
+TaskSimple * alml_taskSheduler::get_taskByName(TASKNAME_t p){
+  for(uint8_t i=0; i<_listItem.size(); i++){
+    if (_listItem[i]->get_name() == p) return _list[i];; 
+  }
+  return nullptr;
+}
+void alml_taskSheduler::set_enabled_byTaskName(TASKNAME_t p, boolean v){
+  for(uint8_t i=0; i<_listItem.size(); i++){
+    if (_listItem[i]->get_name() == p) _list[i]->set_enabled(v); 
+  }
+}
+void alml_taskSheduler::set_debug_byTaskName(TASKNAME_t p, boolean v){
+  for(uint8_t i=0; i<_listItem.size(); i++){
+    if (_listItem[i]->get_name() == p) _list[i]->set_debug(v); 
+  }
+}
+void alml_taskSheduler::set_name_byTaskName(TASKNAME_t p, const String & v){
+  for(uint8_t i=0; i<_listItem.size(); i++){
+    if (_listItem[i]->get_name() == p) _list[i]->set_name(v); 
+  }
+}
+
+
+void alml_taskSheduler::loop(){
+  for(int i=0; i<_list.size(); i++){if (_list[i]->isEnabled()) _list[i]->execute(); }
+}
+
+alml_taskItem::alml_taskItem(TaskCallback_t cb, uint32_t duration) {
+  if (cb) _cb = std::move(cb);
+  _duration = duration;
+}
+alml_taskItem::alml_taskItem(TaskCallback_t cb, uint32_t duration, TASKNAME_t name, TASKLEVEL_t lvl) {
+  if (cb) _cb = std::move(cb);
+  _duration = duration;
+  _name = name;
+  _lvl  = lvl;
+}
+alml_taskItem::alml_taskItem(TaskCallback_t cb, uint32_t duration, TASKNAME_t name, TASKLEVEL_t lvl, TaskSetFunctionList_t s) {
+  if (cb) _cb       = std::move(cb);
+  if (s)  _cbSetup  = std::move(s);
+  _duration = duration;
+  _name = name;
+  _lvl  = lvl;
+}
+void alml_taskItem::setup(uint8_t p){
+  if (!_cb) return;
+  if (!_cbSetup) return;
+  _cbSetup(p, _duration, _cb);
+}
+
+// void alml_taskSheduler::set_new(){
+//   get_list().add(new TaskSimple());
+// }
+
