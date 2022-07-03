@@ -53,8 +53,8 @@ void setup() {
 
   WCEVO_managerPtrGet()->set_cm(WCEVO_CM_STAAP);
   WCEVO_managerPtrGet()->set_cmFail(WCEVO_CF_NEXTAP);
-  WCEVO_managerPtrGet()->credentials_add((const char *)"free3C3786_EXT", (const char *)"phcaadax");
-  WCEVO_managerPtrGet()->credentials_add((const char *)"free3C3786_EXT", (const char *)"phcaadax");
+  WCEVO_managerPtrGet()->credentials_add((const char *)"SSID_1", (const char *)"PSK_1");
+  WCEVO_managerPtrGet()->credentials_add((const char *)"SSID_2", (const char *)"PSK_2");
   // #ifdef ESP8266
   //   WiFi.setPhyMode(WIFI_PHY_MODE_11N);
   // #endif  
