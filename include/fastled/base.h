@@ -107,13 +107,15 @@ LIB8STATIC void nscale8x4( uint8_t& r, uint8_t& g, uint8_t& b, uint8_t& w, fract
 
   class ledsBase
   { 
+  public:
+
+    
     uint16_t      _num_ledsW    = 0;
     uint8_t       _pin          = 0;
     uint8_t       _stripPos     = 0;
     uint16_t      _num_leds     = 0;
     uint8_t       _contructor   = 0;
     boolean       _hackTw       = false;
-  protected:
     CRGB          * _leds       = nullptr;
     CRGB          * _ledsRGB    = nullptr;
     CRGBW         * _ledsW      = nullptr;
@@ -125,7 +127,6 @@ LIB8STATIC void nscale8x4( uint8_t& r, uint8_t& g, uint8_t& b, uint8_t& w, fract
     void set_ledsPin(uint8_t  result);
     void set_stripPos(uint8_t  result);  
 
-  public:
     CRGB * get_leds();
     CRGBW * get_ledsW();
 

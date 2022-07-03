@@ -74,20 +74,108 @@ void reqNamIDList_json(const String & search, DynamicJsonDocument & doc) {
 }
 void reqNamIDList_json(uint8_t mod, DynamicJsonDocument & doc) {
   JsonArray arr;
+  JsonObject oObj_apip;
+  JsonObject oObj_apip_3;
 
   JsonObject obj ;  
-  if (!doc.containsKey(F("requestnameid"))){
-    obj = doc.createNestedObject(F("requestnameid"));
-  } else {
-    obj = doc[F("requestnameid")];
-  }
 
+  obj = doc.createNestedObject(F("http"));
+  obj.createNestedObject(F("api"));
+  oObj_apip = obj.createNestedObject(F("wcapi"));
+  oObj_apip[F("args")] = F("api, set_cm, to_fs");
+  obj = doc.createNestedObject(F("post"));
+  oObj_apip = obj.createNestedObject(F("apapi"));
+  oObj_apip[F("syntax")]  = F("{op:0, type:HTTP_POST, set:[..], get:[..]}");
+  oObj_apip[F("arg")]     = F("list_req, list_ra");
+  oObj_apip = obj.createNestedObject(F("almlapi"));
+  oObj_apip[F("syntax_")]     = F("{apip:1}");
+  oObj_apip[F("syntax_get")]  = F("{apip:4, get:[{n:,v:}]}");
+  oObj_apip[F("syntax_set")]  = F("{apip:3, apio:{}");
+
+  if (!doc.containsKey(F("almlapi"))){
+    obj = doc.createNestedObject(F("almlapi"));
+  } else {
+    obj = doc[F("almlapi")];
+  }
   switch (mod) {
       case 0:
-        arr = obj.createNestedArray(F("list"));
+        arr = obj.createNestedArray(F("req"));
         for (uint8_t i = 0; i < _reqNamIDList_cnt; i++){
           arr.add(FPSTR(_reqNamIDList[i]._nameId));
         }
+
+        oObj_apip = obj.createNestedObject(F("apip"));
+        oObj_apip.createNestedObject(F("0")); 
+        {
+          JsonObject oOjbect;
+          oOjbect = oObj_apip.createNestedObject(F("1")); 
+          oOjbect[F("desc")] = "restart esp";
+        }
+        {
+          JsonObject oOjbect = oObj_apip.createNestedObject(F("2")); 
+          oOjbect[F("desc")] = F("filesystem format, key=format:value=0->3");
+          JsonArray items = oOjbect.createNestedArray("format");
+          items.add(F("0 - /outputs"));
+          items.add(F("1 - /eff"));
+          items.add(F("2 - /wcevo_config.json"));
+          items.add(F("3 - /"));
+        }
+        oObj_apip_3 = oObj_apip.createNestedObject(F("3")); 
+        {
+          JsonObject oOjbect, oOjbect_2;
+
+          oOjbect = oObj_apip_3.createNestedObject(F("aipo:{ object example 1}"));
+          oOjbect_2 = oOjbect.createNestedObject(F("op")); 
+          oOjbect_2[F("3")] = F("selection via: device name && output pos");
+          oOjbect.createNestedObject(F("dn")); 
+          oOjbect.createNestedObject(F("output")); 
+          oOjbect.createNestedObject(F("req")); 
+          oOjbect_2 = oOjbect.createNestedObject(F("val")); 
+          oOjbect_2[F("v")] = "";
+          oOjbect.createNestedObject(F("from")); 
+
+          oOjbect = oObj_apip_3.createNestedObject(F("aipo:{ object example 2}")); // F("aipo:{ object example 2}")
+          oOjbect_2 = oOjbect.createNestedObject(F("op")); 
+          oOjbect_2[F("2")] = F("selection via: all device");
+          oOjbect.createNestedObject(F("req")); 
+          oOjbect_2 = oOjbect.createNestedObject(F("val")); 
+          oOjbect_2[F("v")] = "";
+          oOjbect.createNestedObject(F("from")); 
+
+          oOjbect = oObj_apip_3.createNestedObject(F("aipo:{ object example 3}")); // F("aipo:{ object example 3}")
+          oOjbect_2 = oOjbect.createNestedObject(F("op")); 
+          oOjbect_2[F("1")] = F("selection via: device name");
+          oOjbect.createNestedObject(F("dn")); 
+          oOjbect.createNestedObject(F("req")); 
+          oOjbect_2 = oOjbect.createNestedObject(F("val")); 
+          oOjbect_2[F("v")] = "";
+          oOjbect.createNestedObject(F("from")); 
+
+          oOjbect = oObj_apip_3.createNestedObject(F("aipo:{ object example 4}"));
+          oOjbect_2 = oOjbect.createNestedObject(F("op")); 
+          oOjbect_2[F("1")] = F("selection via: device name");
+          oOjbect_2 = oOjbect.createNestedObject(F("req")); 
+          oOjbect_2 = oOjbect.createNestedObject(F("val")); 
+          oOjbect_2[F("v")] = "";
+          oOjbect_2 = oOjbect.createNestedObject(F("array")); 
+          oOjbect[F("EX")] = F("A:[{dn:devicename, A:[op1,op2]},{...}]");
+        } 
+        {
+          JsonArray arr_2 =  oObj_apip.createNestedArray(F("4")); 
+          uint8_t cnt = ARRAY_SIZE(ALMLPT_KKEY_ALL);
+          for (uint8_t i = 0; i < cnt; i++){
+            if ( FPSTR(ALMLPT_KKEY_ALL[i]) == FPSTR(ALMLPT_KKEY_006) ) {
+              DynamicJsonDocument jsonBuffer(255);
+              JsonArray root = jsonBuffer.to<JsonArray>();
+              root.add(FPSTR(ALMLPT_KKEY_ALL[i]));
+              root.add(F("v"));
+              arr_2.add(root);
+            } else {
+              arr_2.add(FPSTR(ALMLPT_KKEY_ALL[i]));
+            }
+          }        
+        }        
+
       break;
       case 1:
         arr = obj.createNestedArray(F("listarg"));

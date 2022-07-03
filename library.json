@@ -78,7 +78,6 @@
         "name": " JPEGDecoder",
         "version": "https://github.com/Bodmer/JPEGDecoder.git"
     }, 
-    
     {
         "owner": "Ivan Seidel",
         "name": "LinkedList",

@@ -354,16 +354,16 @@ void Webserver::device_api(DynamicJsonDocument & doc, String & reply) {
 
   uint8_t op = 0;
 
-  DynamicJsonDocument doc_reponse(2048);
+  DynamicJsonDocument doc_reponse(3200);
   JsonObject root = doc_reponse.to<JsonObject>();
-  JsonObject oOjbect = root.createNestedObject("device");
+  JsonObject oOjbect = root.createNestedObject(F("device"));
 
-    String ip = WiFi.localIP().toString();
-    uint8_t oc;
-    DevicePtrGet()->get_outputCount(oc);
-    oOjbect[FPSTR(ALMLPT_IP)]= ip;
-    oOjbect[FPSTR(ALMLPT_DN)]= DevicePtrGet()->get_name();
-    oOjbect[FPSTR(ALMLPT_OC)]= oc;
+  String ip = WiFi.localIP().toString();
+  uint8_t oc;
+  DevicePtrGet()->get_outputCount(oc);
+  oOjbect[FPSTR(ALMLPT_IP)]= ip;
+  oOjbect[FPSTR(ALMLPT_DN)]= DevicePtrGet()->get_name();
+  oOjbect[FPSTR(ALMLPT_OC)]= oc;
 
   if (doc.containsKey(FPSTR(ALMLPT_API_OP))) {
     op = doc[FPSTR(ALMLPT_API_OP)].as<uint8_t>();
@@ -371,10 +371,7 @@ void Webserver::device_api(DynamicJsonDocument & doc, String & reply) {
     serializeJson(doc_reponse, reply);
     return;
   } 
-  if (op == 0) {
-    // _DeviceWifi->forceReconnect();
-    // oOjbect[F("result")] = "server init";
-  }  
+
   if (op == 1) {
     oOjbect[F("result")] = "server restarted in 5sec";
     DevicePtrGet()->restart_requiered();
@@ -386,32 +383,33 @@ void Webserver::device_api(DynamicJsonDocument & doc, String & reply) {
       DevicePtrGet()->restart_requiered();
     }
   } 
-  if (op == 3) {
+  else if (op == 3) {
     if (doc.containsKey(FPSTR(ALMLPT_API_OUTPUT))) { 
-      DynamicJsonDocument output(2048);  
+      DynamicJsonDocument output(1024);  
       String sData = doc[FPSTR(ALMLPT_API_OUTPUT)].as<String>();
       serializeJson(output, sData);
       DeserializationError error = deserializeJson(output, sData);
       if (error) {
         oOjbect[F("result")] = "deserializeJson error";
       }  else {
+        output[FPSTR(ALMLPT_DN)] = DevicePtrGet()->get_name();
         RemoteControlPtrGet()->handleJson(output, false);
         oOjbect = root.createNestedObject(FPSTR(ALMLPT_OUTPUTS));
-        DevicePtrGet()->outputs_toJson(oOjbect, false, true, true);        
+        DevicePtrGet()->outputs_toJson(oOjbect, false, true, false);        
         yield();
         RemoteControlPtrGet()->handleJson(4);
       }  
     }  
   }
-  if (op == 4) {
+  else if (op == 4) {
     if (doc.containsKey(FPSTR(ALMLPT_GET))) { 
-      DynamicJsonDocument output(2048); 
+      // DynamicJsonDocument output(2048); 
       JsonArray getArr = doc[FPSTR(ALMLPT_GET)].as<JsonArray>();
       for (JsonObject item : getArr) {
         String n = item[FPSTR(ALMLPT_N)].as<String>();
         String v = item[FPSTR(ALMLPT_V)].as<String>();
-        if (n == FPSTR(ALMLPT_KKEY_004))    {reqNamIDList_json(0, doc_reponse);}
-        else if (n == "arg_search")  {reqNamIDList_json(v, doc_reponse);}
+        if (n == FPSTR(ALMLPT_KKEY_004))        {reqNamIDList_json(0, doc_reponse);}
+        else if (n ==  FPSTR(ALMLPT_KKEY_006))  {reqNamIDList_json(v, doc_reponse);}
         else if (n ==  FPSTR(ALMLPT_KKEY_002)) {
           oOjbect = root.createNestedObject(FPSTR(ALMLPT_OUTPUTS));
           DevicePtrGet()->outputs_toJson(oOjbect, false, true, false);    
@@ -445,11 +443,9 @@ void Webserver::httpHandle(AsyncWebServerRequest * request, const String & v1, u
       Serial.println(error.c_str()) ;
 	  } else {
       LOG(ALML_DEBUGREGION_WEBSERVER, "-\n");
-      // _AP_Api.parsingRequest(doc, reply, "");
       switch (mod) {
           case 0: _AP_Api.parsingRequest(doc, reply, "");break;
           case 1: device_api(doc, reply);break;
-          // case 2:break;
           default:break;
       }
     } 
@@ -516,6 +512,15 @@ void Webserver::setup(){
 
   ALT_TRACEC(WCEVO_DEBUGREGION_WCEVO, "STA register HTTP_GET request : / to www/index.html\n");
   web_server.serveStatic("/", FILESYSTEM, "/").setDefaultFile("www/index.html").setFilter(ON_STA_FILTER);
+  
+  ALT_TRACEC(WCEVO_DEBUGREGION_WCEVO, "STA register HTTP_GET request : /api\n"); 
+  web_server.on("/api", HTTP_GET, [](AsyncWebServerRequest * request) {
+    DynamicJsonDocument doc(3200);
+    reqNamIDList_json(0, doc);
+    String result;
+    serializeJson(doc, result);
+    request->send(200, "application/json", result);
+  }); 
 
   ALT_TRACEC(WCEVO_DEBUGREGION_WCEVO, "STA register HTTP_POST request : /apapi\n"); 
   web_server.on("/apapi", HTTP_POST, [](AsyncWebServerRequest * request){}, NULL, [=](AsyncWebServerRequest * request, uint8_t *data, size_t len, size_t index, size_t total) {  
@@ -582,7 +587,9 @@ void Webserver::setup(){
   });
   web_server.on("/FileSystem_statu", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send_P(200, "text/html", FileSystemStatu_html, FileSystem_processor);
-  }); 
+  });   
+
+
   web_server.on("/FileSystem_list", HTTP_GET, [](AsyncWebServerRequest * request) {
     String result;
     FileSystem_recursiveList(result);

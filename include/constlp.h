@@ -105,13 +105,15 @@ static const char ALMLPT_                 [] PROGMEM = "from";
   const char ALMLPT_KKEY_003[] PROGMEM = "json_outputEffect";
   const char ALMLPT_KKEY_004[] PROGMEM = "list_request";
   const char ALMLPT_KKEY_005[] PROGMEM = "user_cfg";
+  const char ALMLPT_KKEY_006[] PROGMEM = "arg_search";
   static const char* const ALMLPT_KKEY_ALL[] PROGMEM = {
     ALMLPT_KKEY_000,
     ALMLPT_KKEY_001,
     ALMLPT_KKEY_002,
     ALMLPT_KKEY_003,
     ALMLPT_KKEY_004,
-    ALMLPT_KKEY_005
+    ALMLPT_KKEY_005,
+    ALMLPT_KKEY_006
   };
 
 void reqNamIDList_json(uint8_t, DynamicJsonDocument & doc);

@@ -162,9 +162,19 @@ void RemoteControl_udp::handleJson(DynamicJsonDocument & doc, boolean udpMulti){
 
     op == 4 : handle control id realesed 
       sauvegarde FS
-      envoi mis a hour serveur
+      reponse udpmulti
+      reponse udp suivant la dernierre requette reçu
       réactivation timerAuto mise a a jour serveur
-    
+    op == 7 : handle control id realesed 
+      sauvegarde FS
+      reponse udp effect
+      réactivation timerAuto mise a a jour serveur
+    op == 8 : handle control id realesed 
+      sauvegarde FS
+      reponse udpmulti
+      reponse udp effect+outputs
+      réactivation timerAuto mise a a jour serveur
+
     op == 5
       preset
         load from fs
@@ -200,13 +210,16 @@ void RemoteControl_udp::handleJson(DynamicJsonDocument & doc, boolean udpMulti){
     if ( doc[FPSTR(ALMLPT_CLI)].as<String>() == FPSTR(ALMLPT_PLUG))       {return;}
   }
   if (doc.containsKey(FPSTR(ALMLPT_FROM))) {
-    if ( doc[FPSTR(ALMLPT_FROM)].as<uint8_t>() != 0 && doc[FPSTR(ALMLPT_FROM)].as<uint8_t>() != 1) {return;}
+    // if ( doc[FPSTR(ALMLPT_FROM)].as<uint8_t>() != 0 && doc[FPSTR(ALMLPT_FROM)].as<uint8_t>() != 1) {return;}
+    if      ( doc[FPSTR(ALMLPT_FROM)].as<uint8_t>() == 0 ) {;}
+    else if ( doc[FPSTR(ALMLPT_FROM)].as<uint8_t>() == 1 ) {;}
+    else return;
   }
 
   uint8_t op = 0;
   if (doc.containsKey(FPSTR(ALMLPT_OP))) {
     op = doc[FPSTR(ALMLPT_OP)];
-    if (doc[FPSTR(ALMLPT_FROM)].as<uint8_t>()==1) Udp::client_add(); 
+    if ( doc.containsKey(FPSTR(ALMLPT_FROM)) && doc[FPSTR(ALMLPT_FROM)].as<uint8_t>() == 1 ) Udp::client_add(); 
   } else {
     return;
   }
@@ -217,19 +230,16 @@ void RemoteControl_udp::handleJson(DynamicJsonDocument & doc, boolean udpMulti){
 
   if (op == 4) { 
     doc.clear(); doc.garbageCollect();
-    // ALT_TRACEC(ALML_DEBUGREGION_REMOTE, "op: 4\n");
     handleJson(op);
     return;    
   }
   else if (op == 7) { 
     doc.clear(); doc.garbageCollect();
-    // ALT_TRACEC(ALML_DEBUGREGION_REMOTE, "op: 7\n");
     handleJson(op); 
     return;    
   }    
   else if (op == 8) {
     doc.clear(); doc.garbageCollect();
-    // ALT_TRACEC(ALML_DEBUGREGION_REMOTE, "op: 8\n");
     handleJson(op);  
     return;
   } else {
@@ -245,10 +255,18 @@ void RemoteControl_udp::handleJson(DynamicJsonDocument & doc, boolean udpMulti){
       String dn       = doc[FPSTR(ALMLPT_DN)].as<String>();
       String thisDn   = al_tools::ch_toString(DevicePtrGet()->get_name());
       if (dn ==  thisDn) {
+        if (doc.containsKey(FPSTR(ALMLPT_API_OP))) {
+          String almlapiReponse="";
+          _Webserver.device_api(doc, almlapiReponse);  
+        }        
         DevicePtrGet()->parseJson_device(doc);
       }
 
     } else if (op == 2)  {
+      if (doc.containsKey(FPSTR(ALMLPT_API_OP))) {
+        String almlapiReponse="";
+        _Webserver.device_api(doc, almlapiReponse);  
+      }    
       DevicePtrGet()->parseJson_device(doc);
 
     } else if ((op == 3) && doc.containsKey(FPSTR(ALMLPT_DN))) {
@@ -311,7 +329,7 @@ void api_getter(DynamicJsonDocument & doc, const char * in) {
   if ( al_tools::ch_toString(key) == FPSTR(ALMLPT_KKEY_005) ) 
     serializeJsonPretty(DeviceUserConfig, Serial);Serial.println();
 
-
+  if (key) delete key;
 
 }
 void keyboard_getter(const String & v1) {
@@ -354,11 +372,10 @@ void keyboard_getter(const String & v1) {
    
 }
 void keyboard_print() {
-  Serial.printf_P(PSTR("@&JSON:0,list_lbid=\n"));
-  Serial.printf_P(PSTR("JSON\n"));
+  Serial.printf_P(PSTR("!JSON:0,json_effect=\n"));
   uint8_t count = ARRAY_SIZE(ALMLPT_KKEY_ALL);
   for(int i = 0; i < count; ++i) {
-    Serial.printf_P(PSTR("[%-3d] %s\n"), i, ALMLPT_KKEY_ALL[i]);
+    Serial.printf_P(PSTR("\t[%-3d] %s\n"), i, ALMLPT_KKEY_ALL[i]);
   }    
 }
 

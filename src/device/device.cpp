@@ -325,8 +325,9 @@ Device * DevicePtrGet() {return _DevicePtr;};
  * @param[in]  oc    nombre de strip
  */
 Device::Device(const char * name, uint8_t oc){    
-  _DevicePtr          = this;
   
+  _DevicePtr          = this;
+
   if(!_task_reset) _task_reset = new TaskSimple();
 
   /* creation des class Output pour chhaque strip */
@@ -477,7 +478,7 @@ Device::Device(const char * name, uint8_t oc){
   _alml_taskSheduler.get_listItem().add(new alml_taskItem(taskCb_udp,       100000,  TASKNAME_UDP,       TASKLEVEL_ALLWAYS, taskSetup));    // 2
   _alml_taskSheduler.get_listItem().add(new alml_taskItem(taskCb_lamp,      50000,   TASKNAME_LAMP,      TASKLEVEL_ALLWAYS, taskSetup));    // 3
   _alml_taskSheduler.get_listItem().add(new alml_taskItem(taskCb_program,   100000,  TASKNAME_PROGRAM,   TASKLEVEL_ALLWAYS, taskSetup));    // 4
-  _alml_taskSheduler.get_listItem().add(new alml_taskItem(taskCb_wifi,      100000,  TASKNAME_WIFI,      TASKLEVEL_ALLWAYS, taskSetup));    // 5
+  _alml_taskSheduler.get_listItem().add(new alml_taskItem(taskCb_wifi,      50000,  TASKNAME_WIFI,      TASKLEVEL_ALLWAYS, taskSetup));    // 5
   _alml_taskSheduler.get_listItem().add(new alml_taskItem(taskCb_webserver, 100000,  TASKNAME_WEBSERVER, TASKLEVEL_ALLWAYS, taskSetup));    // 6
   #ifdef DEBUG_KEYBOARD
   _alml_taskSheduler.get_listItem().add(new alml_taskItem(taskCb_serial,    50000,    TASKNAME_SERIAL,    TASKLEVEL_ALLWAYS, taskSetup));    // 7  
@@ -664,7 +665,9 @@ void Device::loop(){
   _alml_taskSheduler.loop();
   if(_task_reset) {if (_task_reset->isEnabled()) _task_reset->execute();}
   if ( WCEVO_managerPtrGet()->updateModReady() ){
-    wcevo_updateMod_t mod = WCEVO_managerPtrGet()->get_updateMod();
+    #ifdef ALML_TFT
+    wcevo_updateMod_t mod = WCEVO_managerPtrGet()->get_updateMod();  
+    #endif
     WCEVO_managerPtrGet()->set_updateModEnd() ;
     #ifdef ALML_TFT
       _almlTft.fillRect(
@@ -1112,6 +1115,11 @@ void Device::parseJson_outpitListByDn(DynamicJsonDocument & doc){
 
     const char * dn = item [FPSTR(ALMLPT_DN)];
     if (al_tools::ch_toString(dn) != thisDn) continue;
+
+    if (doc.containsKey(FPSTR(ALMLPT_API_OP))) {
+      String almlapiReponse="";
+      _Webserver.device_api(doc, almlapiReponse);  
+    }
 
     if (!item.containsKey(FPSTR(ALMLPT_A))) continue;
     
@@ -1597,3 +1605,4 @@ void Device::format(uint8_t mod){
 
 
 }
+
