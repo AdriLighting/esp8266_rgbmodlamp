@@ -56,7 +56,30 @@ void EffectFx_neo::instance(){
   _gTargetPalette       =  gGradientPalettes[_pPos] ;
   neoSetting.pPalette   =  gGradientPalettes[_pPos] ;   
 }
-
+const TProgmemRGBPalette16 *palette_arr[] = {
+  &AuroraColors_p,
+  &ForestColors_p,
+  &NormalFire_p,
+  &LavaColors_p,
+  &OceanColors_p,
+  &PartyColors_p,
+  &RainbowColors_p,
+  &HeatColors_p,
+  &CloudColors_p,
+  &EveningColors_p,
+  &LithiumFireColors_p,
+  &WoodFireColors_p,
+  &SodiumFireColors_p,
+  &CopperFireColors_p,
+  &AlcoholFireColors_p,
+  &RubidiumFireColors_p,
+  &PotassiumFireColors_p,
+  &WaterfallColors_p,
+  &AutumnColors_p,
+  &AcidColors_p,
+  &StepkosColors_p,
+  &HolyLightsColors_p
+};
 void EffectFx_neo::update(){
     if (oldBpm!= speed){
       oldBpm = speed;
@@ -99,6 +122,13 @@ void EffectFx_neo::update(){
         _gTargetPalette =  gGradientPalettes[_pPos] ;
       }      
     }
+    if (_effectType == OET_PAL ){
+      if (LAMPPTRGET()->_palPos != _pPos) {
+        _pPos = LAMPPTRGET()->_palPos;
+        if (_pPos>22){_pPos=0;LAMPPTRGET()->_palPos=0;}
+      }
+      neoSetting.pPalette =  * palette_arr[_pPos] ;      
+    }   
     
     _neoFxxPtr->service(statu, show);
 } 
@@ -170,6 +200,8 @@ void EffectFx_mode::load(uint8_t strip_pos){
   case 14   : _neoFxxPtr->_effectMod[0] = &WS2812FX::mode_tricolor_chase        ; break;
   case 15   : _neoFxxPtr->_effectMod[0] = &WS2812FX::mode_breath                ; break;
   case 16   : _neoFxxPtr->_effectMod[0] = &WS2812FX::mode_colortwinkle          ; break;
+  case 17   : _neoFxxPtr->_effectMod[0] = &WS2812FX::mode_fade                  ; break;
+  case 18   : _neoFxxPtr->_effectMod[0] = &WS2812FX::mode_fire_2012                  ; break;
   default:break;
   }   
 }

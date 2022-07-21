@@ -802,6 +802,7 @@ boolean Output_set_eff_f(uint8_t sP, String &result, const String & cmd, const J
 boolean Device::parseJson_output(uint8_t p , String & nextEffect, const String & req, JsonObject val) {
 
   if (get_outputArray(p)->set_select(req, val))           return true;
+  
   if (!get_outputArray(p)->get_select()) return false;
 
   if (get_outputArray(p)->set_onoff(req, val))            return true;

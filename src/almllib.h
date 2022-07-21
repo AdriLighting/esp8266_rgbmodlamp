@@ -1,5 +1,5 @@
-	#define FASTLED_INTERRUPT_RETRY_COUNT   (0)                 // default: 2; // Use this to determine how many times FastLED will attempt to re-transmit a frame if interrupted for too long by interrupts
-	#define FASTLED_ESP8266_RAW_PIN_ORDER   
+    #define FASTLED_INTERRUPT_RETRY_COUNT   (0)                 // default: 2; // Use this to determine how many times FastLED will attempt to re-transmit a frame if interrupted for too long by interrupts
+    #define FASTLED_ESP8266_RAW_PIN_ORDER   
 
 #include "../include/constleds.h"
 #include "../include/alml_task.h"
@@ -22,9 +22,9 @@
 #include "../include/device/output.h"
 
 #ifdef ALML_TFT
-	#include "../include/tft/tft.h"	
-	#include "../include/tft/tfttxt.h"	
+    #include "../include/tft/tft.h" 
+    #include "../include/tft/tfttxt.h"  
 #endif
 #ifdef ALML_IRTFT
-	#include "../include/tft/irtft_device.h"	
+    #include "../include/tft/irtft_device.h"    
 #endif

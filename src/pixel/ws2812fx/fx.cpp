@@ -666,7 +666,7 @@ uint16_t WS2812FX::mode_fade(void) {
   int lum = _seg_rt->counter_mode_step;
   if(lum > 255) lum = 511 - lum; // lum = 0 -> 255 -> 0
 
-  uint32_t color = color_blend(_seg->colors[1], _seg->colors[0], lum);
+  uint32_t color = color_blend(0, _seg->colors[0], lum);
   if (effectSetting->isTw)  ledsSet::fill(_strip_w, color, _seg->start, _seg_len);
   else                      ledsSet::fill(_strip,   color, _seg->start, _seg_len);
 
@@ -2238,9 +2238,12 @@ uint16_t WS2812FX::mode_fire_2012()
 
   if (it != _seg_rt->step)
   {
+    uint8_t ignition = max(7,_seg_len/10); 
+
     // Step 1.  Cool down every cell a little
     for (uint16_t i = 0; i < _seg_len; i++) {
-      _seg_rt->data[i] = qsub8(heat[i],  random8(0, (((20 + _seg->speed /3) * 10) / _seg_len) + 2) );
+      uint8_t temp = _seg_rt->data[i] = qsub8(heat[i],  random8(0, (((20 + _seg->speed /3) * 10) / _seg_len) + 2) );
+      heat[i] = (temp==0 && i<ignition) ? 16 : temp; 
     }
   
     // Step 2.  Heat from each cell drifts 'up' and diffuses a little
@@ -2249,7 +2252,7 @@ uint16_t WS2812FX::mode_fire_2012()
     }
     
     // Step 3.  Randomly ignite new 'sparks' of heat near the bottom
-    if (random8() <= _seg->intensity) {
+    if (random8() <= effectSetting->scale) {
       uint8_t y = random8(7);
       if (y < _seg_len) heat[y] = qadd8(heat[y], random8(160,255));
     }
@@ -2258,7 +2261,7 @@ uint16_t WS2812FX::mode_fire_2012()
 
   // Step 4.  Map from heat cells to LED colors
   for (uint16_t j = 0; j < _seg_len; j++) {
-    CRGB color = ColorFromPalette(currentPalette, MIN(heat[j],240), 255, LINEARBLEND);
+    CRGB color = ColorFromPalette(currentPalette, MIN(heat[j],240), _seg->intensity, LINEARBLEND);
     setPixelColor(j, color.red, color.green, color.blue);
   }
   return FRAMETIME;

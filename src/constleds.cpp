@@ -1,6 +1,12 @@
 #include "../include/constleds.h"
 #include "libextern.h"
 
+/*
+ ordre a respecter
+ fx -> EffectFx_mode::load(uint8_t strip_pos) - line 166
+ al -> void EffectWorker::workerset(...) - line 296
+
+*/
 
 PROGMEM effeNamIDList _effeNamIDList [] = {
 {ALMLPT_EFF_Pride,                          E_FX_Wave,              "NONE",         "1", "0", -1}, /* EffectFx_mode_pride                 - 0 - 1 */
@@ -20,6 +26,8 @@ PROGMEM effeNamIDList _effeNamIDList [] = {
 {ALMLPT_EFF_TricolorChasesyncro,            E_FX_TricolorChaseSync, "HTPG",         "1", "1", -1}, /* EffectFx_mode_tricolor_chase        - 0 - 1 */
 {ALMLPT_EFF_Breath,                         E_FX_Breath,            "HTPG",         "1", "0", -1}, /* EffectFx_mode_breath                - 0 - 1 */
 {ALMLPT_EFF_Colortwinkle,                   E_FX_Colortwinkle,      "NONE",         "1", "0", -1}, /* EffectFx_mode_colortwinkle          - 0 - 1 */
+{ALMLPT_EFF_Fade,                           E_FX_Fade,              "HUETIMER",     "1", "0", -1}, /* EffectFx_rainbowWave                - 0 - 2 */
+{ALMLPT_EFF_Scan,                           E_FX_Scan,              "PAL",          "1", "0", -1}, /* EffectFx_rainbowWave                - 0 - 2 */
 {ALMLPT_EFF_Commets,                        E_FX_Commets,           "HUETIMER",     "2", "0", -1}, /* EffectFx_comets                     - 0 - 2 */
 {ALMLPT_EFF_Commet,                         E_FX_Commet,            "HUETIMER",     "2", "0", -1}, /* EffectFx_Comet                      - 0 - 2 */
 {ALMLPT_EFF_Ruggle,                         E_FX_Move,              "HUETIMER",     "2", "0", -1}, /* EffectFx_ruggle                     - 0 - 2 */

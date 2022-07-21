@@ -1,9 +1,9 @@
 #include "../../include/pixel/effectmath.h"
 uint16_t XY(uint8_t sP, uint8_t x, uint8_t y) {
-	bool roate;
-	leds_managePtrGet()->get_matrix(sP)->get_rotatedMatrix(roate);
-	if (roate) 	return leds_managePtrGet()->getPixelNumber(sP, y, x);
-	else  		return leds_managePtrGet()->getPixelNumber(sP, x, y);
+    bool roate;
+    leds_managePtrGet()->get_matrix(sP)->get_rotatedMatrix(roate);
+    if (roate)  return leds_managePtrGet()->getPixelNumber(sP, y, x);
+    else        return leds_managePtrGet()->getPixelNumber(sP, x, y);
 }
 CRGB EffectMath::getLed(uint8_t sP, uint16_t idx) { return leds_managePtrGet()->get_crgbArray(sP)[idx]; }
 CRGBW EffectMath::getLedW(uint8_t sP, uint16_t idx) { return leds_managePtrGet()->get_crgwbArray(sP)[idx]; }

@@ -149,7 +149,9 @@ void reqNamIDList_json(uint8_t mod, DynamicJsonDocument & doc) {
           oOjbect.createNestedObject(F("req")); 
           oOjbect_2 = oOjbect.createNestedObject(F("val")); 
           oOjbect_2[F("v")] = "";
-          oOjbect.createNestedObject(F("from")); 
+          oOjbect_2 = oOjbect.createNestedObject(F("from")); 
+          oOjbect_2[F("0")] = "nodejs";
+          oOjbect_2[F("1")] = "kodular";
 
           oOjbect = oObj_apip_3.createNestedObject(F("aipo:{ object example 4}"));
           oOjbect_2 = oOjbect.createNestedObject(F("op")); 

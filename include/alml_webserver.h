@@ -41,7 +41,7 @@ typedef struct  WSREP_FLAG{
 } WSREP_flag;
 class Webserver {
 
-	typedef std::function<void(const String & v1)> callback_function_t;
+  typedef std::function<void(const String & v1)> callback_function_t;
 
 
   // Webserver_request       * _requestArray       = nullptr;
@@ -95,85 +95,85 @@ public:
   void socketHandle(const String & v1);  
   boolean socketIsConnected();  
 };
-	class UdpMulti
-	{
-		IPAddress _multiIp       		= {239, 0, 0, 57};
-		uint16_t  _multiPort     		= 9200;
-		uint8_t 	* _packetBuffer 	= nullptr;
-		uint16_t 	_packetBufferSize	= 0;
-		WiFiUDP 	_server;
+  class UdpMulti
+  {
+    IPAddress _multiIp          = {239, 0, 0, 57};
+    uint16_t  _multiPort        = 9200;
+    uint8_t   * _packetBuffer   = nullptr;
+    uint16_t  _packetBufferSize = 0;
+    WiFiUDP   _server;
 
-	public:
-		UdpMulti();
-		~UdpMulti(){};
+  public:
+    UdpMulti();
+    ~UdpMulti(){};
 
-		void send(const String & transmit_buffer);	
-		void begin();
-		void stop();
-		boolean receive();
-		void get_packetBuffer(String & result);
-	};
-	class UdpClients
-	{
-		IPAddress _ip;
-		uint16_t _port;
-		uint32_t _lastReceivedMsg;
-	public:
-		UdpClients(IPAddress,uint16_t);
-		~UdpClients();
-		uint16_t get_port() {return _port;}
-		IPAddress get_ip() {return _ip;}
-		
-	};
+    void send(const String & transmit_buffer);  
+    void begin();
+    void stop();
+    boolean receive();
+    void get_packetBuffer(String & result);
+  };
+  class UdpClients
+  {
+    IPAddress _ip;
+    uint16_t _port;
+    uint32_t _lastReceivedMsg;
+  public:
+    UdpClients(IPAddress,uint16_t);
+    ~UdpClients();
+    uint16_t get_port() {return _port;}
+    IPAddress get_ip() {return _ip;}
+    
+  };
 
-	class Udp
-	{
-		LList<UdpClients *>  _list;
+  class Udp
+  {
+    LList<UdpClients *>  _list;
 
-		IPAddress _clientIp;
-		uint16_t _clientPort;
-		
-		// adri_timer 	* _timerSendPacket;
-		uint16_t 	_port 			= 9100;
-		uint8_t 	* _packetBuffer 	= nullptr;
-		uint16_t 	_packetBufferSize	= 0;
-		WiFiUDP 	_server;
+    IPAddress _clientIp;
+    uint16_t _clientPort;
+    
+    // adri_timer   * _timerSendPacket;
+    uint16_t  _port       = 9100;
+    uint8_t   * _packetBuffer   = nullptr;
+    uint16_t  _packetBufferSize = 0;
+    WiFiUDP   _server;
 
-	public:
-  		typedef std::function<void(String)> callback_function_t;
+  public:
+      typedef std::function<void(String)> callback_function_t;
 
 
-		Udp();
-		~Udp(){};
-		void client_add();
-		void set_port(uint16_t port);
-		void remote_print();
-		IPAddress remoteIP();
-		bool receive() ;
-		void send_toIp(const String & transmit_buffer) ;
-		void send_toIp(const String & transmit_buffer, IPAddress ip, uint16_t port) ;
-		void send_toIp(const String & transmit_buffer, const char * ip, uint16_t port) ;
-		void send_toIp(const String & transmit_buffer, const String & s_ip, const String & s_port);
-		void send_toIp(const char* buffer,const String & s_ip, const String & s_port);
-		void send_toIp(const char* buffer,const char * ip, uint16_t port) ;
-		void send(const String & transmit_buffer);
-		void parse();
-		void parse_set_func(callback_function_t callback);	
-		void begin();
-		void stop();
-		void loop();
-		void get_packetBuffer(String & result);
+    Udp();
+    ~Udp(){};
+    void client_add();
+    void set_port(uint16_t port);
+    void remote_print();
+    IPAddress remoteIP();
+    bool receive() ;
+    void send_toIp(const String & transmit_buffer) ;
+    void send_toIp(const String & transmit_buffer, IPAddress ip, uint16_t port) ;
+    void send_toIp(const String & transmit_buffer, const char * ip, uint16_t port) ;
+    void send_toIp(const String & transmit_buffer, const String & s_ip, const String & s_port);
+    void send_toIp(const char* buffer,const String & s_ip, const String & s_port);
+    void send_toIp(const char* buffer,const char * ip, uint16_t port) ;
+    void send(const String & transmit_buffer);
+    void parse();
+    void parse_set_func(callback_function_t callback);  
+    void begin();
+    void stop();
+    void loop();
+    void get_packetBuffer(String & result);
 
-	private :
-		callback_function_t _parseC	= nullptr;    
-		
-	};
-		
-	// extern WiFiUDP _udpMultiServer;
-	extern Webserver _Webserver;
-	// extern Udp _Udp;
-	// extern UdpMulti _UdpMulti;
-	// extern char _udpMulti_packetBuffer[];
-	// extern uint8_t * _udpMulti_packetBuffer;
-	// extern char _udp_packetBuffer[];
+  private :
+    callback_function_t _parseC = nullptr;    
+    
+  };
+    
+  // extern WiFiUDP _udpMultiServer;
+  extern Webserver _Webserver;
+  // extern Udp _Udp;
+  // extern UdpMulti _UdpMulti;
+  // extern char _udpMulti_packetBuffer[];
+  // extern uint8_t * _udpMulti_packetBuffer;
+  // extern char _udp_packetBuffer[];
 #endif // ALML_WEBSERVER_H

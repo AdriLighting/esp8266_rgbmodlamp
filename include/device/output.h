@@ -190,7 +190,7 @@ static const char FNPATH_COLORPICKER    [] PROGMEM = "/outputs/colopicker.json";
       */
       /** \brief puissance de la brillance total du strip */  
       uint8_t _briEff  = 100;
-      uint8_t _bri  = 255;
+      uint8_t _bri  = 60;
       uint8_t _briOld  = 100;
 
 

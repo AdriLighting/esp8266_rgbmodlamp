@@ -28,15 +28,15 @@ extern EffectWorker  * _effects[];
 // char      _udpMulti_packetBuffer[UDP_IN_MAXSIZE + 1]; 
 // char      _udp_packetBuffer[UDP_IN_MAXSIZE + 1]; 
 // Udp *     _UdpPtr = nullptr;
-// UdpMulti 	_UdpMulti;
-// Udp 			_Udp;
+// UdpMulti   _UdpMulti;
+// Udp      _Udp;
 // AsyncWebSocket    web_socket("/ws");
 AsyncWebServer    web_server(80);
 AsyncEventSource  event("/events");
 Webserver         _Webserver;
-DNSServer					dnsServer;
-WCEVO_manager   	_WCEVO_manager(ADS_NAME, (const char *)"alml1234", &dnsServer, &web_server); 
-TaskSimple				* _task_httpCallback 				= nullptr;
+DNSServer         dnsServer;
+WCEVO_manager     _WCEVO_manager(ADS_NAME, (const char *)"alml1234", &dnsServer, &web_server); 
+TaskSimple        * _task_httpCallback        = nullptr;
 TaskSimple        * _task_socketCallback      = nullptr;
 TaskSimple        * _task_socketCleanupClient = nullptr;
 
@@ -426,22 +426,62 @@ void Webserver::device_api(DynamicJsonDocument & doc, String & reply) {
         }              
       }
     }  
-  }       
+  } 
+  else if (op == 5) {
+    if (doc.containsKey(FPSTR(ALMLPT_V))) { 
+      String v = oOjbect[FPSTR(ALMLPT_V)].as<String>();
+      oOjbect[F("result")] = "deepsleep requiered";
+      if (v=="max") {
+        _task_httpCallback->set_callbackOstart([](){
+          FastLED.clear();
+          FastLED.show();
+          ESP.deepSleep(ESP.deepSleepMax());
+        });
+        _task_httpCallback->set_iteration_max(0);
+        _task_httpCallback->set_taskDelay(ETD::ETD_DELAY, true, 5, 2);
+        _task_httpCallback->set_taskDelayEnabled(ETD::ETD_DELAY, true);
+        _task_httpCallback->set_enabled(true);         
+      } else if (v=="1") {
+        _task_httpCallback->set_callbackOstart([](){
+          FastLED.clear();
+          FastLED.show();
+          uint64_t t = 3600000000UL; // 3600000000UL
+          ESP.deepSleep(t);
+        });
+        _task_httpCallback->set_iteration_max(0);
+        _task_httpCallback->set_taskDelay(ETD::ETD_DELAY, true, 5, 2);
+        _task_httpCallback->set_taskDelayEnabled(ETD::ETD_DELAY, true);
+        _task_httpCallback->set_enabled(true);   
+      } else if (v=="030") {
+        _task_httpCallback->set_callbackOstart([](){
+          FastLED.clear();
+          FastLED.show();          
+          uint64_t t = 900000000UL; // 900000000UL
+          ESP.deepSleep(t);
+        });
+        _task_httpCallback->set_iteration_max(0);
+        _task_httpCallback->set_taskDelay(ETD::ETD_DELAY, true, 5, 2);
+        _task_httpCallback->set_taskDelayEnabled(ETD::ETD_DELAY, true);
+        _task_httpCallback->set_enabled(true);   
+      }
+
+    }
+  }      
   serializeJson(doc_reponse, reply);
 
 }
 void Webserver::httpHandle(AsyncWebServerRequest * request, const String & v1, uint8_t mod){
   if (request) {
-	  String json = v1;
-	  json.replace("\r\n", "");
-	  // Serial.printf_P(PSTR("[_callPost /json] %s\n"), json.c_str(()));  
-	  String reply = "";
-	  DynamicJsonDocument doc(2048);  
-	  DeserializationError error = deserializeJson(doc, json);
-	  if (error) {
-	    Serial.printf_P(PSTR("[_http_post_cb][PARSSING ERROR] %s\n"), json.c_str()); 
+    String json = v1;
+    json.replace("\r\n", "");
+    // Serial.printf_P(PSTR("[_callPost /json] %s\n"), json.c_str(()));  
+    String reply = "";
+    DynamicJsonDocument doc(2048);  
+    DeserializationError error = deserializeJson(doc, json);
+    if (error) {
+      Serial.printf_P(PSTR("[_http_post_cb][PARSSING ERROR] %s\n"), json.c_str()); 
       Serial.println(error.c_str()) ;
-	  } else {
+    } else {
       LOG(ALML_DEBUGREGION_WEBSERVER, "-\n");
       switch (mod) {
           case 0: _AP_Api.parsingRequest(doc, reply, "");break;
@@ -450,7 +490,7 @@ void Webserver::httpHandle(AsyncWebServerRequest * request, const String & v1, u
       }
     } 
     LOG(ALML_DEBUGREGION_WEBSERVER, "-\n");
-	  http_send(request, 200, WSTE_APPJSON, reply);
+    http_send(request, 200, WSTE_APPJSON, reply);
     LOG(ALML_DEBUGREGION_WEBSERVER, "-\n");
   }  
 }
@@ -521,15 +561,24 @@ void Webserver::setup(){
     serializeJson(doc, result);
     request->send(200, "application/json", result);
   }); 
-
+  ALT_TRACEC(WCEVO_DEBUGREGION_WCEVO, "STA register HTTP_GET request : /api\n"); 
+  web_server.on("/kodular", HTTP_GET, [](AsyncWebServerRequest * request) {
+    String result;
+    DynamicJsonDocument docReponse(1024);
+    JsonObject objDevice = docReponse.createNestedObject(F("device"));
+    objDevice[FPSTR(ALSI_STAIP)] = WiFi.localIP().toString();
+    objDevice[FPSTR(ALSI_HOSTNAME)] = WiFi.hostname();
+    serializeJson(docReponse, result);
+    request->send(200, FPSTR(WSTP_002), result);
+  }).setFilter(ON_STA_FILTER); 
   ALT_TRACEC(WCEVO_DEBUGREGION_WCEVO, "STA register HTTP_POST request : /apapi\n"); 
   web_server.on("/apapi", HTTP_POST, [](AsyncWebServerRequest * request){}, NULL, [=](AsyncWebServerRequest * request, uint8_t *data, size_t len, size_t index, size_t total) {  
       // _httpCallbackRequest  = request;
       String sData = "";
       for (size_t i = 0; i < len; i++) {sData += (char) data[i];}
       sData.replace("\r\n", "");
-			LOG(ALML_DEBUGREGION_WEBSERVER, "http <<<[%s][%s][%s] %s-message[%d]\n\t%s\n", 
-			request->host().c_str(), request->url().c_str(), WRMTP_ARR[request->method()-1], request->contentType().c_str(), sData.length(), sData.c_str());    
+      LOG(ALML_DEBUGREGION_WEBSERVER, "http <<<[%s][%s][%s] %s-message[%d]\n\t%s\n", 
+      request->host().c_str(), request->url().c_str(), WRMTP_ARR[request->method()-1], request->contentType().c_str(), sData.length(), sData.c_str());    
       LOG(ALML_DEBUGREGION_WEBSERVER, "--\n");
       _task_httpCallback->set_callbackOstart(std::bind(&Webserver::httpHandle, this, request, sData, 0));
       _task_httpCallback->set_iteration_max(0);
@@ -783,7 +832,7 @@ void UdpMulti::get_packetBuffer(String & result) {
 }
 void UdpMulti::begin(){
   #if defined(ESP8266)
-  	IPAddress ip(239,0,0,57);
+    IPAddress ip(239,0,0,57);
     _server.beginMulticast(WiFi.localIP(), ip, 9200);
   #elif defined(ESP32)
     _server.beginMulticast(_multiIp, _multiPort);
@@ -881,7 +930,7 @@ bool Udp::receive() {
   _packetBuffer[length]=0;
 
 
-	// String ip_str = alml_webserver::ip2string(_server.remoteIP());
+  // String ip_str = alml_webserver::ip2string(_server.remoteIP());
 
   _clientIp   = _server.remoteIP();
   _clientPort = _server.remotePort();

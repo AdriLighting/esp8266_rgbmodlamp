@@ -2,19 +2,19 @@
 #include <altoolslib.h>
 
 void MatrixParam::get_width(uint16_t & result){
-	result = _width;
+  result = _width;
 }
 void MatrixParam::get_height(uint16_t & result){
-	result = _height;
+  result = _height;
 }
 void MatrixParam::get_width_v(uint16_t & result){
-	result = _width_v;
+  result = _width_v;
 }
 void MatrixParam::get_segements(uint8_t & result){
-	result = _segments;
+  result = _segments;
 }
 void MatrixParam::get_type(bool & result){
-	result = _matrixType;
+  result = _matrixType;
 }
 void MatrixParam::get_rotatedMatrix(bool & result){
   result = _rotated_matrix;

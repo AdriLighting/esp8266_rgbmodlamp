@@ -22,7 +22,7 @@ void _Program_cb(const String itemBaseName, const uint16_t& itemBasePos, uint8_t
 Effectslist::Effectslist(){
   ALT_TRACEC("main", "-\n");
 
-	_EffectslistPtr = this;
+  _EffectslistPtr = this;
 
 
   uint8_t cnt = 0;
@@ -49,7 +49,7 @@ Effectslist::Effectslist(){
     cnt++;
   }
   _AP_DEFAULTLIST = new const char*[cnt+1]; 
-  _listId  				= new uint8_t[cnt+1]; 
+  _listId         = new uint8_t[cnt+1]; 
   uint8_t pos = 0;
 
 
@@ -113,18 +113,18 @@ Effectslist::Effectslist(){
   }  
 */
   _Program->remote_action(apSetter_t::APSET_PLAY_LB);
-  _Program->remote_action(apSetter_t::APSET_PLAY_DELAY, "60");
-  _Program->remote_action(apSetter_t::APSET_PLAY_STOP);
+  _Program->remote_action(apSetter_t::APSET_PLAY_DELAY, "180");
+  _Program->remote_action(apSetter_t::APSET_PLAY_START);
   _Program->remote_action(apSetter_t::APSET_ITEMID, "0");
 
   ALT_TRACEC("main", "--\n");
 }
 
 void Effectslist::eff_next(){
-	_Program->remote_action(apSetter_t::APSET_ITEM_NEXT);	
+  _Program->remote_action(apSetter_t::APSET_ITEM_NEXT); 
 }
 void Effectslist::eff_prev(){
-	_Program->remote_action(apSetter_t::APSET_ITEM_PREV);	
+  _Program->remote_action(apSetter_t::APSET_ITEM_PREV); 
 }
 void Effectslist::toggle(){
   _Program->remote_action(apSetter_t::APSET_PLAY_TOGGLE); 

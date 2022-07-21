@@ -78,6 +78,8 @@ static const char ALMLPT_EFF_Commet                           [] PROGMEM = "Comm
 static const char ALMLPT_EFF_Bounce                           [] PROGMEM = "Bounce";
 static const char ALMLPT_EFF_Ruggle                           [] PROGMEM = "Ruggle";
 static const char ALMLPT_EFF_RainbowWave                      [] PROGMEM = "Rainbow Wave";
+static const char ALMLPT_EFF_Fade                             [] PROGMEM = "fade";
+static const char ALMLPT_EFF_Scan                             [] PROGMEM = "scan";
 
 
 static const char ALMLPT_EFF_ChaseBlackoutrainbow             [] PROGMEM = "Chase blackout rainbow";
@@ -121,6 +123,31 @@ static const char E_FX_ColorWipe []  PROGMEM =
   // " {\"id\":7,\"type\":3,\"val\":1,\"min\":0,\"max\":2,\"name\":\"" DFTINTF_119 "\"},"
   " {\"id\":8,\"type\":3,\"val\":0,\"min\":0,\"max\":255,\"name\":\"" DFTINTF_101 "\"},"
   " {\"id\":9,\"type\":3,\"val\":0,\"min\":0,\"max\":255,\"name\":\"" DFTINTF_113 "\"}"
+  "]}";
+
+static const char E_FX_Fade []  PROGMEM = 
+  "{" COTNROLS_PREFIX ",\"ctrls\":["
+  " {\"id\":1,\"val\":105,\"min\":0,\"max\":255},"
+  " {\"id\":2,\"val\":0,\"min\":0,\"max\":0,\"state\":3},"
+  " {\"id\":4,\"type\":0,\"val\":40,\"min\":1,\"max\":255,\"name\":\"" DFTINTF_122 "\"},"
+  // " {\"id\":7,\"type\":3,\"val\":1,\"min\":0,\"max\":2,\"name\":\"" DFTINTF_119 "\"},"
+  " {\"id\":8,\"type\":3,\"val\":0,\"min\":0,\"max\":255,\"name\":\"" DFTINTF_101 "\"}"
+  "]}";
+
+// static const char E_FX_Scan []  PROGMEM = 
+//   "{" COTNROLS_PREFIX ",\"ctrls\":["
+//   " {\"id\":1,\"val\":105,\"min\":0,\"max\":255},"
+//   " {\"id\":2,\"val\":0,\"min\":0,\"max\":0,\"state\":3},"
+//   " {\"id\":4,\"type\":0,\"val\":40,\"min\":1,\"max\":255,\"name\":\"" DFTINTF_122 "\"},"
+//   " {\"id\":5,\"type\":0,\"val\":60,\"min\":0,\"max\":255,\"name\":\"" DFTINTF_123 "\"},"
+//   // " {\"id\":7,\"type\":3,\"val\":1,\"min\":0,\"max\":2,\"name\":\"" DFTINTF_119 "\"},"
+//   " {\"id\":8,\"type\":3,\"val\":0,\"min\":0,\"max\":255,\"name\":\"" DFTINTF_101 "\"},"
+//   " {\"id\":9,\"type\":3,\"val\":0,\"min\":0,\"max\":255,\"name\":\"" DFTINTF_113 "\"}"
+//   "]}";
+static const char E_FX_Scan []  PROGMEM = 
+  "{" COTNROLS_PREFIX ",\"ctrls\":["
+  " {\"id\":1,\"val\":105,\"min\":0,\"max\":255},"
+  " {\"id\":2,\"val\":0,\"min\":0,\"max\":255}"
   "]}";
 
 static const char E_FX_ColorWipeRnd []  PROGMEM = 

@@ -314,11 +314,11 @@ void EffectWorker::workerset(uint8_t stripPos, uint16_t effect, const bool isCfg
     case 1: worker = std::unique_ptr<EffectFx_mode> (new EffectFx_mode(effect)); break;
     case 2:
       switch (effect) {
-  case 17   : worker = std::unique_ptr<EffectFx_comets>                         (new EffectFx_comets                      (false)           ); break;
-  case 18   : worker = std::unique_ptr<EffectFx_Comet>                          (new EffectFx_Comet                       (false)           ); break;
-  case 19   : worker = std::unique_ptr<EffectFx_ruggle>                         (new EffectFx_ruggle                      (false)           ); break;
-  case 20   : worker = std::unique_ptr<EffectFx_rainbowWave>                    (new EffectFx_rainbowWave                 (false)           ); break;
-  case 21   : worker = std::unique_ptr<EffectFx_ArmoireOutsideToInside>         (new EffectFx_ArmoireOutsideToInside      (false)           ); break;
+  case 19   : worker = std::unique_ptr<EffectFx_comets>                         (new EffectFx_comets                      (false)           ); break;
+  case 20   : worker = std::unique_ptr<EffectFx_Comet>                          (new EffectFx_Comet                       (false)           ); break;
+  case 21   : worker = std::unique_ptr<EffectFx_ruggle>                         (new EffectFx_ruggle                      (false)           ); break;
+  case 22   : worker = std::unique_ptr<EffectFx_rainbowWave>                    (new EffectFx_rainbowWave                 (false)           ); break;
+  case 23   : worker = std::unique_ptr<EffectFx_ArmoireOutsideToInside>         (new EffectFx_ArmoireOutsideToInside      (false)           ); break;
         default   : worker = std::unique_ptr<EffectFx_comets>                         (new EffectFx_comets                      (false)           ); break;
       }      
       break;
